@@ -21,16 +21,16 @@ class ExpenseController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $allowedCategories = implode(',', Expense::CATEGORIES);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric'],
+            'category' => ['required', 'string', 'in:'.$allowedCategories],
             'date' => ['required', 'date'],
         ]);
 
-        $request->user()->expenses()->create([
-            ...$validated,
-            'category' => 'General',
-        ]);
+        $request->user()->expenses()->create($validated);
 
         return redirect()->back()->with('status', 'Expense added successfully.');
     }

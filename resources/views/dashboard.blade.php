@@ -212,6 +212,15 @@
                             <input id="expense_amount" name="amount" type="number" step="0.01" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
                         </div>
                         <div>
+                            <label for="expense_category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select id="expense_category" name="category" required class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                                <option value="" disabled {{ old('category') ? '' : 'selected' }}>Select a category</option>
+                                @foreach ($expense_categories as $category)
+                                    <option value="{{ $category }}" {{ old('category') === $category ? 'selected' : '' }}>{{ $category }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label for="expense_date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
                             <input id="expense_date" name="date" type="date" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
                         </div>
