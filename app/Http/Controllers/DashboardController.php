@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -97,6 +98,7 @@ class DashboardController extends Controller
             'daily_budget_remaining' => $dailyBudgetRemaining,
             'categories_with_totals' => $categoriesWithTotals,
             'recent_expenses' => $recentExpenses,
+            'expense_categories' => Expense::CATEGORIES,
         ]);
     }
 }
