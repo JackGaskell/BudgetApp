@@ -45,6 +45,7 @@
                         <thead class="text-gray-600 border-b border-gray-200">
                             <tr>
                                 <th class="text-left py-3 px-2 font-semibold">Name</th>
+                                <th class="text-left py-3 px-2 font-semibold">Category</th>
                                 <th class="text-left py-3 px-2 font-semibold">Status</th>
                                 <th class="text-left py-3 px-2 font-semibold">Date</th>
                                 <th class="text-right py-3 px-2 font-semibold">Amount</th>
@@ -55,6 +56,7 @@
                             @forelse ($expenses as $expense)
                                 <tr>
                                     <td class="py-3 px-2 text-gray-800">{{ $expense->name }}</td>
+                                    <td class="py-3 px-2 text-gray-700">{{ $expense->category }}</td>
                                     <td class="py-3 px-2">
                                         @if ($expense->date <= now()->toDateString())
                                             <span class="inline-flex text-xs font-medium bg-green-100 text-green-700 px-2 py-1 rounded-full">Paid</span>
@@ -74,7 +76,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="py-4 px-2 text-sm text-gray-500">No expenses yet — add one from the dashboard.</td>
+                                    <td colspan="6" class="py-4 px-2 text-sm text-gray-500">No expenses yet — add one from the dashboard.</td>
                                 </tr>
                             @endforelse
                         </tbody>
