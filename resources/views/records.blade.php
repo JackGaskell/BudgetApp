@@ -12,7 +12,6 @@
             <p class="text-lg font-bold text-gray-900">SpendSense</p>
             <div class="flex items-center gap-4">
                 <a href="{{ route('dashboard') }}" class="text-sm text-gray-700 hover:text-gray-900 font-medium">Dashboard</a>
-                <a href="{{ route('records.index') }}" class="text-sm text-indigo-700 font-semibold">Records</a>
                 <p class="text-sm text-gray-600">{{ auth()->user()->name }}</p>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -34,7 +33,6 @@
                 <h1 class="text-2xl font-bold text-gray-900">Your Records</h1>
                 <p class="text-sm text-gray-500 mt-1">Manage your saved income and expenses.</p>
             </div>
-            <a href="{{ route('dashboard') }}" class="bg-white border border-gray-200 text-gray-700 hover:text-gray-900 text-sm font-medium px-4 py-2 rounded-lg shadow-sm">Back to Dashboard</a>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
