@@ -111,7 +111,7 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                     <h3 class="text-base font-bold text-gray-900 mb-4">Spending Breakdown</h3>
                     @if ($categories_with_totals->isEmpty())
-                        <p class="text-sm text-gray-500">No spending recorded for this month yet. Add expenses to see category trends.</p>
+                        <p class="text-sm text-gray-500">No expenses dated this month yet (paid or scheduled). Add expenses to see category trends.</p>
                     @else
                         @php
                             $barColors = [
@@ -126,15 +126,35 @@
                         <div class="space-y-3">
                             @foreach ($categories_with_totals as $category)
                                 <div>
-                                    <div class="flex items-center justify-between mb-1">
+                                    <div class="flex items-center justify-between mb-1 gap-2">
                                         <p class="text-sm font-semibold text-gray-800">{{ $category->category }}</p>
-                                        <p class="text-sm text-gray-600">
+                                        <p class="text-sm text-gray-600 shrink-0 text-right">
                                             @money($category->total)
                                             <span class="text-xs text-gray-500">({{ number_format($category->percentage, 0) }}%)</span>
                                         </p>
                                     </div>
+                                    @if ($category->actual_total > 0 || $category->scheduled_total > 0)
+                                        <p class="text-xs text-gray-500 mb-1.5">
+                                            @if ($category->actual_total > 0 && $category->scheduled_total > 0)
+                                                @money($category->actual_total) spent · @money($category->scheduled_total) upcoming
+                                            @elseif ($category->scheduled_total > 0)
+                                                @money($category->scheduled_total) upcoming this month
+                                            @else
+                                                @money($category->actual_total) spent so far
+                                            @endif
+                                        </p>
+                                    @endif
                                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div class="h-2.5 rounded-full {{ $barColors[$loop->index % count($barColors)] }}" style="width: {{ min(100, $category->percentage) }}%;"></div>
+                                        <div class="flex h-2.5 rounded-full overflow-hidden min-w-0" style="width: {{ min(100, $category->percentage) }}%;">
+                                            @if ($category->actual_total > 0 && $category->scheduled_total > 0)
+                                                <div class="min-h-full min-w-0 {{ $barColors[$loop->index % count($barColors)] }}" style="flex: {{ $category->actual_total }} 1 0;"></div>
+                                                <div class="min-h-full min-w-0 bg-gray-400" style="flex: {{ $category->scheduled_total }} 1 0;" title="Upcoming this month"></div>
+                                            @elseif ($category->scheduled_total > 0)
+                                                <div class="min-h-full min-w-0 flex-1 rounded-full bg-gray-400/90 border border-dashed border-gray-500/50" title="Upcoming this month"></div>
+                                            @else
+                                                <div class="min-h-full min-w-0 flex-1 rounded-full {{ $barColors[$loop->index % count($barColors)] }}"></div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach

@@ -63,21 +63,49 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $categoriesWithTotals = $user->expenses()
+        $actualCategoryTotals = $user->expenses()
             ->select('category', DB::raw('SUM(amount) as total'))
             ->whereMonth('date', $currentMonth)
             ->whereYear('date', $currentYear)
             ->whereDate('date', '<=', $today)
             ->groupBy('category')
-            ->orderByDesc('total')
             ->get()
-            ->map(function ($category) use ($actualExpenses) {
-                $category->percentage = $actualExpenses > 0
-                    ? ($category->total / $actualExpenses) * 100
-                    : 0;
+            ->keyBy('category');
 
-                return $category;
-            });
+        $scheduledCategoryTotals = $user->expenses()
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->whereDate('date', '>', $today)
+            ->groupBy('category')
+            ->get()
+            ->keyBy('category');
+
+        $monthSpendForBreakdown = $actualExpenses + $scheduledExpenses;
+        $categoryNames = $actualCategoryTotals->keys()
+            ->merge($scheduledCategoryTotals->keys())
+            ->unique()
+            ->values();
+
+        $categoriesWithTotals = $categoryNames
+            ->map(function (string $category) use ($actualCategoryTotals, $scheduledCategoryTotals, $monthSpendForBreakdown) {
+                $actual = (float) ($actualCategoryTotals->get($category)->total ?? 0);
+                $scheduled = (float) ($scheduledCategoryTotals->get($category)->total ?? 0);
+                $total = $actual + $scheduled;
+
+                return (object) [
+                    'category' => $category,
+                    'total' => $total,
+                    'actual_total' => $actual,
+                    'scheduled_total' => $scheduled,
+                    'percentage' => $monthSpendForBreakdown > 0
+                        ? ($total / $monthSpendForBreakdown) * 100
+                        : 0,
+                ];
+            })
+            ->filter(fn ($row) => $row->total > 0)
+            ->sortByDesc('total')
+            ->values();
 
         return view('dashboard', [
             'actual_income' => $actualIncome,
