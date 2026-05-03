@@ -80,4 +80,26 @@ class ExpenseCategoryTest extends TestCase
             'category' => 'General',
         ]);
     }
+
+    public function test_user_cannot_create_expense_with_negative_amount(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/dashboard')
+            ->post('/expenses', [
+                'name' => 'Invalid',
+                'amount' => '-10.00',
+                'category' => 'Food',
+                'date' => now()->toDateString(),
+            ]);
+
+        $response->assertSessionHasErrors('amount');
+
+        $this->assertDatabaseMissing('expenses', [
+            'user_id' => $user->id,
+            'name' => 'Invalid',
+        ]);
+    }
 }

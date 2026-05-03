@@ -46,7 +46,7 @@
                                 <th class="text-left py-3 px-2 font-semibold">Category</th>
                                 <th class="text-left py-3 px-2 font-semibold">Status</th>
                                 <th class="text-left py-3 px-2 font-semibold">Date</th>
-                                <th class="text-right py-3 px-2 font-semibold">Amount</th>
+                                <th class="text-right py-3 px-2 font-semibold">Amount (£)</th>
                                 <th class="text-right py-3 px-2 font-semibold">Action</th>
                             </tr>
                         </thead>
@@ -63,7 +63,7 @@
                                         @endif
                                     </td>
                                     <td class="py-3 px-2 text-gray-700">{{ $expense->date }}</td>
-                                    <td class="py-3 px-2 text-right text-gray-900">£{{ number_format($expense->amount, 2) }}</td>
+                                    <td class="py-3 px-2 text-right text-gray-900">@money($expense->amount)</td>
                                     <td class="py-3 px-2 text-right">
                                         <form method="POST" action="{{ route('expenses.destroy', $expense) }}" onsubmit="return confirm('Delete this expense?');">
                                             @csrf
@@ -91,7 +91,7 @@
                                 <th class="text-left py-3 px-2 font-semibold">Name</th>
                                 <th class="text-left py-3 px-2 font-semibold">Status</th>
                                 <th class="text-left py-3 px-2 font-semibold">Date</th>
-                                <th class="text-right py-3 px-2 font-semibold">Amount</th>
+                                <th class="text-right py-3 px-2 font-semibold">Amount (£)</th>
                                 <th class="text-right py-3 px-2 font-semibold">Action</th>
                             </tr>
                         </thead>
@@ -107,7 +107,7 @@
                                         @endif
                                     </td>
                                     <td class="py-3 px-2 text-gray-700">{{ $income->date }}</td>
-                                    <td class="py-3 px-2 text-right text-gray-900">£{{ number_format($income->amount, 2) }}</td>
+                                    <td class="py-3 px-2 text-right text-gray-900">@money($income->amount)</td>
                                     <td class="py-3 px-2 text-right">
                                         <form method="POST" action="{{ route('income.destroy', $income) }}" onsubmit="return confirm('Delete this income?');">
                                             @csrf

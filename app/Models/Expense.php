@@ -7,6 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Expense extends Model
 {
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:2',
+        ];
+    }
+
     public const CATEGORIES = [
         'Housing & Utilities',
         'Food',
