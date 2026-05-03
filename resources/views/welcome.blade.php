@@ -8,8 +8,7 @@
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900 antialiased">
     <div class="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16">
-        <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">{{ __('Student budgeting') }}</p>
-        <h1 class="mt-3 text-4xl font-bold tracking-tight text-gray-900">{{ config('app.name') }}</h1>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900">{{ config('app.name') }}</h1>
         <p class="mt-4 text-lg text-gray-600">
             {{ __('Track income and expenses in GBP, see your month at a glance, and keep upcoming bills alongside what you have already spent.') }}
         </p>
