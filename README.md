@@ -19,7 +19,7 @@ I built this as a **portfolio piece** to show full-stack Laravel work: auth, val
 
 | Area        | Choice                          |
 |------------|----------------------------------|
-| Backend    | PHP **8.3+**, **Laravel 13**     |
+| Backend    | PHP **8.4+**, **Laravel 13**     |
 | Auth UI    | **Laravel Breeze** (Blade)     |
 | Frontend   | **Tailwind CSS**, **Vite**     |
 | JS         | **Alpine.js** (modals, mobile menu) |
@@ -30,7 +30,7 @@ I built this as a **portfolio piece** to show full-stack Laravel work: auth, val
 
 ## Requirements
 
-- PHP **8.3+** with common extensions (`openssl`, `pdo`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath` recommended)
+- PHP **8.4+** with common extensions (`openssl`, `pdo`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath` recommended)
 - [Composer](https://getcomposer.org/)
 - [Node.js](https://nodejs.org/) **20+** (or current LTS) and npm
 
