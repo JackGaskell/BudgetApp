@@ -96,7 +96,7 @@ class ExpenseUpdateTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertSessionHas('status', 'Expense updated successfully.')
+            ->assertSessionHas('status', __('Expense updated successfully.'))
             ->assertRedirect(route('records.index'));
 
         $this->assertDatabaseHas('expenses', [
