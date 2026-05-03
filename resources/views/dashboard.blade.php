@@ -122,6 +122,14 @@
                                 'bg-violet-400',
                                 'bg-rose-400',
                             ];
+                            $barUpcomingColors = [
+                                'bg-indigo-300',
+                                'bg-sky-300',
+                                'bg-emerald-300',
+                                'bg-amber-300',
+                                'bg-violet-300',
+                                'bg-rose-300',
+                            ];
                         @endphp
                         <div class="space-y-3">
                             @foreach ($categories_with_totals as $category)
@@ -144,17 +152,21 @@
                                             @endif
                                         </p>
                                     @endif
-                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div class="flex h-2.5 rounded-full overflow-hidden min-w-0" style="width: {{ min(100, $category->percentage) }}%;">
-                                            @if ($category->actual_total > 0 && $category->scheduled_total > 0)
-                                                <div class="min-h-full min-w-0 {{ $barColors[$loop->index % count($barColors)] }}" style="flex: {{ $category->actual_total }} 1 0;"></div>
-                                                <div class="min-h-full min-w-0 bg-gray-400" style="flex: {{ $category->scheduled_total }} 1 0;" title="Upcoming this month"></div>
-                                            @elseif ($category->scheduled_total > 0)
-                                                <div class="min-h-full min-w-0 flex-1 rounded-full bg-gray-400/90 border border-dashed border-gray-500/50" title="Upcoming this month"></div>
-                                            @else
-                                                <div class="min-h-full min-w-0 flex-1 rounded-full {{ $barColors[$loop->index % count($barColors)] }}"></div>
-                                            @endif
-                                        </div>
+                                    @php
+                                        $barWidthPct = min(100, $category->percentage);
+                                        $ci = $loop->index % count($barColors);
+                                    @endphp
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                        @if ($category->actual_total > 0 && $category->scheduled_total > 0)
+                                            <div class="flex h-2.5 rounded-full overflow-hidden" style="width: {{ $barWidthPct }}%;">
+                                                <div class="h-full shrink-0 {{ $barColors[$ci] }}" style="width: {{ ($category->actual_total / $category->total) * 100 }}%;" title="Spent so far"></div>
+                                                <div class="h-full shrink-0 {{ $barUpcomingColors[$ci] }} ring-1 ring-inset ring-black/10" style="width: {{ ($category->scheduled_total / $category->total) * 100 }}%;" title="Upcoming this month"></div>
+                                            </div>
+                                        @elseif ($category->scheduled_total > 0)
+                                            <div class="h-2.5 rounded-full {{ $barUpcomingColors[$ci] }} ring-1 ring-inset ring-black/10" style="width: {{ $barWidthPct }}%;" title="Upcoming this month"></div>
+                                        @else
+                                            <div class="h-2.5 rounded-full {{ $barColors[$ci] }}" style="width: {{ $barWidthPct }}%;"></div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
