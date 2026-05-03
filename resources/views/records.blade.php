@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Records</title>
+    <title>Records — {{ config('app.name') }}</title>
     @vite('resources/css/app.css')
 </head>
 <body class="bg-gray-50 min-h-screen">
     <nav class="w-full bg-white border-b border-gray-200">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-            <p class="text-lg font-bold text-gray-900">SpendSense</p>
+            <p class="text-lg font-bold text-gray-900">{{ config('app.name') }}</p>
             <div class="flex items-center gap-4">
                 <a href="{{ route('dashboard') }}" class="text-sm text-gray-700 hover:text-gray-900 font-medium">Dashboard</a>
                 <p class="text-sm text-gray-600">{{ auth()->user()->name }}</p>
@@ -65,11 +65,14 @@
                                     <td class="py-3 px-2 text-gray-700">{{ $expense->date }}</td>
                                     <td class="py-3 px-2 text-right text-gray-900">@money($expense->amount)</td>
                                     <td class="py-3 px-2 text-right">
-                                        <form method="POST" action="{{ route('expenses.destroy', $expense) }}" onsubmit="return confirm('Delete this expense?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">Delete</button>
-                                        </form>
+                                        <div class="inline-flex flex-wrap items-center justify-end gap-2">
+                                            <a href="{{ route('expenses.edit', $expense) }}" class="inline-flex bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">Edit</a>
+                                            <form method="POST" action="{{ route('expenses.destroy', $expense) }}" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -109,7 +112,7 @@
                                     <td class="py-3 px-2 text-gray-700">{{ $income->date }}</td>
                                     <td class="py-3 px-2 text-right text-gray-900">@money($income->amount)</td>
                                     <td class="py-3 px-2 text-right">
-                                        <form method="POST" action="{{ route('income.destroy', $income) }}" onsubmit="return confirm('Delete this income?');">
+                                        <form method="POST" action="{{ route('income.destroy', $income) }}">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">Delete</button>
