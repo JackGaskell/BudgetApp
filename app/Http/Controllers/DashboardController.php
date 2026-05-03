@@ -54,8 +54,6 @@ class DashboardController extends Controller
         $daysLeftInMonth = $daysInMonth - $daysPassedInMonth;
         $averageDailySpend = $daysPassedInMonth > 0 ? $actualExpenses / $daysPassedInMonth : 0;
         $daysUntilBroke = $averageDailySpend > 0 ? floor($currentBalance / $averageDailySpend) : null;
-        $expectedSpend = $actualIncome > 0 ? ($actualIncome / $daysInMonth) * $daysPassedInMonth : null;
-        $overspendAmount = !is_null($expectedSpend) ? $actualExpenses - $expectedSpend : null;
         $dailyBudgetRemaining = $daysLeftInMonth > 0
             ? $safeToSpend / $daysLeftInMonth
             : null;
@@ -93,8 +91,6 @@ class DashboardController extends Controller
             'safe_to_spend' => $safeToSpend,
             'projected_overspend_amount' => $projectedOverspendAmount,
             'days_until_broke' => $daysUntilBroke,
-            'expected_spend' => $expectedSpend,
-            'overspend_amount' => $overspendAmount,
             'daily_budget_remaining' => $dailyBudgetRemaining,
             'categories_with_totals' => $categoriesWithTotals,
             'recent_expenses' => $recentExpenses,

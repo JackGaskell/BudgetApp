@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard</title>
+    <title>Dashboard — {{ config('app.name') }}</title>
     @vite('resources/css/app.css')
 </head>
 <body class="bg-gray-50 min-h-screen">
     <nav class="w-full bg-white border-b border-gray-200">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-            <p class="text-lg font-bold text-gray-900">SpendSense</p>
+            <p class="text-lg font-bold text-gray-900">{{ config('app.name') }}</p>
             <div class="flex items-center gap-4">
                 <a href="{{ route('records.index') }}" class="text-sm text-gray-700 hover:text-gray-900 font-medium">Records</a>
                 <p class="text-sm text-gray-600">{{ auth()->user()->name }}</p>
@@ -91,17 +91,15 @@
                         <p class="text-sm text-gray-500 mt-2">You can spend @money($daily_budget_remaining) per day for the rest of the month.</p>
                     @endif
                 </div>
-                <div class="{{ !is_null($projected_overspend_amount) || (!is_null($overspend_amount) && $overspend_amount > 0) ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100' }} border rounded-xl shadow-sm p-4">
-                    <p class="text-sm text-gray-500">Overspending Warning</p>
-                    @if (is_null($overspend_amount))
-                        <p class="text-lg font-bold text-gray-900 mt-2">Not enough data</p>
-                        <p class="text-sm text-gray-500 mt-2">Add income to compare expected vs actual spending.</p>
-                    @elseif (!is_null($projected_overspend_amount))
-                        <p class="text-lg font-bold text-red-600 mt-2">You're on track with your current spending, but based on upcoming bills, you're projected to overspend by @money($projected_overspend_amount) this month.</p>
-                    @elseif ($overspend_amount > 0)
-                        <p class="text-lg font-bold text-red-600 mt-2">You are currently spending faster than expected.</p>
+                <div class="{{ !is_null($projected_overspend_amount) ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100' }} border rounded-xl shadow-sm p-4">
+                    <p class="text-sm text-gray-500">Month-end outlook</p>
+                    @if (!is_null($projected_overspend_amount))
+                        <p class="text-lg font-bold text-red-600 mt-2">Based on this month’s income and expenses (including items dated later this month), you’re projected to finish the month short by @money($projected_overspend_amount).</p>
+                    @elseif ($total_month_income <= 0 && $total_month_expenses <= 0)
+                        <p class="text-lg font-bold text-gray-900 mt-2">No data yet</p>
+                        <p class="text-sm text-gray-500 mt-2">Add income or expenses dated this month to see whether you’re projected to end the month above or below zero.</p>
                     @else
-                        <p class="text-lg font-bold text-green-600 mt-2">You're on track and projected to stay within your budget this month.</p>
+                        <p class="text-lg font-bold text-green-600 mt-2">You’re projected to end this month with @money($projected_end_of_month_balance) left, based on income and expenses dated this month (including scheduled).</p>
                     @endif
                 </div>
             </div>
