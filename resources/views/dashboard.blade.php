@@ -111,7 +111,7 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                     <h3 class="text-base font-bold text-gray-900 mb-4">Spending Breakdown</h3>
                     @if ($categories_with_totals->isEmpty())
-                        <p class="text-sm text-gray-500">No spending recorded for this month yet. Add expenses to see category trends.</p>
+                        <p class="text-sm text-gray-500">No expenses dated this month yet (paid or scheduled). Add expenses to see category trends.</p>
                     @else
                         @php
                             $barColors = [
@@ -122,19 +122,51 @@
                                 'bg-violet-400',
                                 'bg-rose-400',
                             ];
+                            $barUpcomingColors = [
+                                'bg-indigo-300',
+                                'bg-sky-300',
+                                'bg-emerald-300',
+                                'bg-amber-300',
+                                'bg-violet-300',
+                                'bg-rose-300',
+                            ];
                         @endphp
                         <div class="space-y-3">
                             @foreach ($categories_with_totals as $category)
                                 <div>
-                                    <div class="flex items-center justify-between mb-1">
+                                    <div class="flex items-center justify-between mb-1 gap-2">
                                         <p class="text-sm font-semibold text-gray-800">{{ $category->category }}</p>
-                                        <p class="text-sm text-gray-600">
+                                        <p class="text-sm text-gray-600 shrink-0 text-right">
                                             @money($category->total)
                                             <span class="text-xs text-gray-500">({{ number_format($category->percentage, 0) }}%)</span>
                                         </p>
                                     </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div class="h-2.5 rounded-full {{ $barColors[$loop->index % count($barColors)] }}" style="width: {{ min(100, $category->percentage) }}%;"></div>
+                                    @if ($category->actual_total > 0 || $category->scheduled_total > 0)
+                                        <p class="text-xs text-gray-500 mb-1.5">
+                                            @if ($category->actual_total > 0 && $category->scheduled_total > 0)
+                                                @money($category->actual_total) spent · @money($category->scheduled_total) upcoming
+                                            @elseif ($category->scheduled_total > 0)
+                                                @money($category->scheduled_total) upcoming this month
+                                            @else
+                                                @money($category->actual_total) spent so far
+                                            @endif
+                                        </p>
+                                    @endif
+                                    @php
+                                        $barWidthPct = min(100, $category->percentage);
+                                        $ci = $loop->index % count($barColors);
+                                    @endphp
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                        @if ($category->actual_total > 0 && $category->scheduled_total > 0)
+                                            <div class="flex h-2.5 rounded-full overflow-hidden" style="width: {{ $barWidthPct }}%;">
+                                                <div class="h-full shrink-0 {{ $barColors[$ci] }}" style="width: {{ ($category->actual_total / $category->total) * 100 }}%;" title="Spent so far"></div>
+                                                <div class="h-full shrink-0 {{ $barUpcomingColors[$ci] }} ring-1 ring-inset ring-black/10" style="width: {{ ($category->scheduled_total / $category->total) * 100 }}%;" title="Upcoming this month"></div>
+                                            </div>
+                                        @elseif ($category->scheduled_total > 0)
+                                            <div class="h-2.5 rounded-full {{ $barUpcomingColors[$ci] }} ring-1 ring-inset ring-black/10" style="width: {{ $barWidthPct }}%;" title="Upcoming this month"></div>
+                                        @else
+                                            <div class="h-2.5 rounded-full {{ $barColors[$ci] }}" style="width: {{ $barWidthPct }}%;"></div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
