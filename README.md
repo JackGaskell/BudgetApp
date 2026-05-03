@@ -90,18 +90,6 @@ The suite covers auth flows, expense categories and validation, expense updates,
 
 ---
 
-## Live demo
-
-_Add a link here after you deploy (e.g. Laravel on [Laravel Cloud](https://cloud.laravel.com), [Fly.io](https://fly.io), [Railway](https://railway.app), etc.)._
-
----
-
-## Licence
-
-Code style and dependencies follow the **MIT**-licensed Laravel ecosystem. Add a root `LICENSE` file when you publish if you want the terms spelled out on GitHub.
-
----
-
 ## Acknowledgements
 
 Built with [Laravel](https://laravel.com) and [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze).
