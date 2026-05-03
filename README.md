@@ -1,58 +1,95 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Budget App
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A small **Laravel** web app for tracking **income and expenses in GBP**, aimed at students (or anyone) who want a clear view of the **current month**: what has already happened, what is still scheduled, and where money goes by category.
 
-## About Laravel
+I built this as a **portfolio piece** to show full-stack Laravel work: auth, validation, Blade UI, Tailwind, and automated tests—not a production SaaS.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Highlights
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Dashboard** — Current balance (cash basis to today), month stats (actual vs scheduled income/expenses), projected end-of-month balance, daily budget hint, month-end outlook, **spending breakdown** by category (includes upcoming bills), recent expenses, quick **add income / add expense** forms.
+- **Records** — Tabular history with status (paid/upcoming), **edit** expenses, **delete** with confirmation dialogs for expenses and income.
+- **Profile & security** — Laravel Breeze: profile details, password change, account deletion (with confirmation).
+- **UX** — Shared layout across app and auth screens, responsive nav, flash messages, inline validation, GBP formatting via a small money helper and `@money` Blade directive.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tech stack
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Area        | Choice                          |
+|------------|----------------------------------|
+| Backend    | PHP **8.3+**, **Laravel 13**     |
+| Auth UI    | **Laravel Breeze** (Blade)     |
+| Frontend   | **Tailwind CSS**, **Vite**     |
+| JS         | **Alpine.js** (modals, mobile menu) |
+| Database   | **SQLite** by default (see `.env.example`; MySQL/Postgres work too) |
+| Tests      | **PHPUnit** (feature + unit)   |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Requirements
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- PHP **8.3+** with common extensions (`openssl`, `pdo`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath` recommended)
+- [Composer](https://getcomposer.org/)
+- [Node.js](https://nodejs.org/) **20+** (or current LTS) and npm
+
+---
+
+## Quick start (local)
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/JackGaskell/BudgetApp.git
+cd BudgetApp
 
-php artisan boost:install
+composer install
+
+cp .env.example .env
+php artisan key:generate
+
+# SQLite (default in .env.example)
+touch database/database.sqlite
+php artisan migrate
+
+npm install
+npm run build
+
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Open **http://127.0.0.1:8000** — register a user, then use **Dashboard** and **Records**.
 
-## Contributing
+> **Tip:** `composer run setup` runs install, `.env` copy (if missing), key generation, migrate, and `npm run build` (see `composer.json`). With **SQLite**, create the file first: `touch database/database.sqlite`, then run setup.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Optional: MySQL / Postgres
 
-## Code of Conduct
+Set `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` in `.env`, remove or ignore the SQLite file, then run `php artisan migrate`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Tests
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan test
+```
 
-## License
+The suite covers auth flows, expense categories and validation, expense updates, profile actions, and a few unit checks (e.g. money formatting).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Project structure (skim)
+
+| Path | Role |
+|------|------|
+| `app/Http/Controllers/` | Dashboard, records, income/expense CRUD, profile |
+| `app/Models/` | `User`, `Income`, `Expense` |
+| `app/Support/Money.php` | GBP display formatting |
+| `resources/views/` | Blade layouts (`layouts/budget*`, `layouts/app`), dashboard, records, auth |
+| `routes/web.php` | Authenticated routes + Breeze auth |
+| `tests/Feature/` | HTTP / integration tests |
+
+---
+
+## Acknowledgements
+
+Built with [Laravel](https://laravel.com) and [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze).
