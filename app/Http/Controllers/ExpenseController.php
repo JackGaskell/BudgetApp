@@ -36,7 +36,7 @@ class ExpenseController extends Controller
 
         $request->user()->expenses()->create($validated);
 
-        return redirect()->back()->with('status', 'Expense added successfully.');
+        return redirect()->back()->with('status', __('Expense added successfully.'));
     }
 
     public function update(Request $request, Expense $expense): RedirectResponse
@@ -47,7 +47,7 @@ class ExpenseController extends Controller
 
         $expense->update($validated);
 
-        return redirect()->route('records.index')->with('status', 'Expense updated successfully.');
+        return redirect()->route('records.index')->with('status', __('Expense updated successfully.'));
     }
 
     public function destroy(Request $request, Expense $expense): RedirectResponse
@@ -56,7 +56,7 @@ class ExpenseController extends Controller
 
         $expense->delete();
 
-        return redirect()->back()->with('status', 'Expense deleted successfully.');
+        return redirect()->back()->with('status', __('Expense deleted successfully.'));
     }
 
     /**

@@ -15,10 +15,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/records', [RecordsController::class, 'index'])->name('records.index');
     Route::get('/expenses', [ExpenseController::class, 'index']);
-    Route::post('/expenses', [ExpenseController::class, 'store']);
+    Route::post('/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
     Route::get('/expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
     Route::patch('/expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
-    Route::post('/income', [IncomeController::class, 'store']);
+    Route::post('/income', [IncomeController::class, 'store'])->name('income.store');
     Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
     Route::delete('/income/{income}', [IncomeController::class, 'destroy'])->name('income.destroy');
 

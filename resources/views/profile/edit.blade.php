@@ -1,8 +1,9 @@
-<x-app-layout>
+<x-app-layout :title="__('Profile')">
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="text-xl font-semibold leading-tight text-gray-900">
             {{ __('Profile') }}
         </h2>
+        <p class="mt-1 text-sm text-gray-500">{{ __('Update your account details and security settings.') }}</p>
     </x-slot>
 
     <div class="py-12">

@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :page-title="__('Register')">
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
