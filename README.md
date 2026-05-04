@@ -2,7 +2,30 @@
 
 A small **Laravel** web app for tracking **income and expenses in GBP**, aimed at students (or anyone) who want a clear view of the **current month**: what has already happened, what is still scheduled, and where money goes by category.
 
-I built this as a **portfolio piece** to show full-stack Laravel work: auth, validation, Blade UI, Tailwind, and automated tests—not a production SaaS.
+I put it together as a **portfolio project** — auth, validation, Blade + Tailwind, and a few PHPUnit tests.
+
+In the repo you will find the usual bits: CRUD, server-side validation, Blade layouts/components, a dashboard that rolls up user data, and feature tests for the main HTTP flows.
+
+---
+
+## Live demo
+
+**Try it:** [https://budgetapp-main-4fnmmd.free.laravel.cloud](https://budgetapp-main-4fnmmd.free.laravel.cloud)  
+
+You can poke around there, or run it locally with **Quick start** below if you prefer.
+
+---
+
+## How the numbers work
+
+Quick notes if you are reading the code or clicking around:
+
+- **Current balance** — Cash-style view **up to today**: income and expenses **on or before** today, so you see what should be “in hand” now.
+- **Actual vs scheduled** — **Actual** is dated on or before today; **scheduled** is dated **later this month**, so upcoming bills and future pay still shape the monthly picture.
+- **Projected end-of-month balance** — Combines what has happened with what is still scheduled **in the current calendar month**.
+- **Insights** (e.g. daily budget, month-end outlook) — Derived from that same month window and the split between past and future-dated items.
+
+All presentation amounts use a small **GBP** formatting helper and the `@money` Blade directive (see `app/Support/Money.php`).
 
 ---
 
@@ -61,6 +84,8 @@ Open **http://127.0.0.1:8000** — register a user, then use **Dashboard** and *
 
 > **Tip:** `composer run setup` runs install, `.env` copy (if missing), key generation, migrate, and `npm run build` (see `composer.json`). With **SQLite**, create the file first: `touch database/database.sqlite`, then run setup.
 
+> **Dev assets:** For hot-reload while you change CSS/JS, run `npm run dev` in a second terminal alongside `php artisan serve` (instead of or after `npm run build`).
+
 ### Optional: MySQL / Postgres
 
 Set `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` in `.env`, remove or ignore the SQLite file, then run `php artisan migrate`.
@@ -87,9 +112,3 @@ The suite covers auth flows, expense categories and validation, expense updates,
 | `resources/views/` | Blade layouts (`layouts/budget*`, `layouts/app`), dashboard, records, auth |
 | `routes/web.php` | Authenticated routes + Breeze auth |
 | `tests/Feature/` | HTTP / integration tests |
-
----
-
-## Acknowledgements
-
-Built with [Laravel](https://laravel.com) and [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze).
