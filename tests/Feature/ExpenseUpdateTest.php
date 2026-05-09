@@ -197,11 +197,16 @@ class ExpenseUpdateTest extends TestCase
     public function test_records_page_shows_edit_link_for_own_expenses(): void
     {
         $user = User::factory()->create();
-        $expense = Expense::factory()->for($user)->create();
+        $expense = Expense::factory()->for($user)->create([
+            'date' => now()->toDateString(),
+        ]);
 
         $response = $this
             ->actingAs($user)
-            ->get(route('records.index'));
+            ->get(route('records.index', [
+                'year' => now()->year,
+                'month' => now()->month,
+            ]));
 
         $response->assertOk();
         $response->assertSee(route('expenses.edit', $expense), false);

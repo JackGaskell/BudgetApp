@@ -3,41 +3,50 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Services\RecurringMaterializer;
+use App\Support\ViewMonth;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(Request $request, RecurringMaterializer $materializer): View
     {
+        /** @var User $user */
         $user = Auth::user();
-        $today = now()->toDateString();
-        $currentMonth = now()->month;
-        $currentYear = now()->year;
+
+        [$year, $month] = ViewMonth::fromRequest($request);
+        $materializer->materializeMonth($user, $year, $month);
+
+        $splitDate = ViewMonth::splitDateForActualVsScheduled($year, $month);
+        $isCurrentMonth = ViewMonth::isCurrentMonth($year, $month);
 
         $actualIncome = $user->incomes()
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->whereDate('date', '<=', $today)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->whereDate('date', '<=', $splitDate)
             ->sum('amount');
 
         $scheduledIncome = $user->incomes()
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->whereDate('date', '>', $today)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->whereDate('date', '>', $splitDate)
             ->sum('amount');
 
         $actualExpenses = $user->expenses()
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->whereDate('date', '<=', $today)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->whereDate('date', '<=', $splitDate)
             ->sum('amount');
 
         $scheduledExpenses = $user->expenses()
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->whereDate('date', '>', $today)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->whereDate('date', '>', $splitDate)
             ->sum('amount');
 
         $totalMonthIncome = $actualIncome + $scheduledIncome;
@@ -49,34 +58,50 @@ class DashboardController extends Controller
             ? abs($projectedEndOfMonthBalance)
             : null;
 
-        $daysPassedInMonth = now()->day;
-        $daysInMonth = now()->daysInMonth;
-        $daysLeftInMonth = $daysInMonth - $daysPassedInMonth;
+        $viewMonthStart = Carbon::create($year, $month, 1);
+        $daysInMonth = $viewMonthStart->daysInMonth;
+
+        if ($isCurrentMonth) {
+            $daysPassedInMonth = now()->day;
+        } elseif ($viewMonthStart->lt(now()->startOfMonth())) {
+            $daysPassedInMonth = $daysInMonth;
+        } else {
+            $daysPassedInMonth = 0;
+        }
+
         $averageDailySpend = $daysPassedInMonth > 0 ? $actualExpenses / $daysPassedInMonth : 0;
-        $daysUntilBroke = $averageDailySpend > 0 ? floor($currentBalance / $averageDailySpend) : null;
-        $dailyBudgetRemaining = $daysLeftInMonth > 0
-            ? $safeToSpend / $daysLeftInMonth
+        $daysUntilBroke = ($isCurrentMonth && $averageDailySpend > 0)
+            ? (int) floor($currentBalance / $averageDailySpend)
             : null;
 
+        if ($isCurrentMonth) {
+            $daysLeftInMonth = max(0, $daysInMonth - now()->day);
+            $dailyBudgetRemaining = $daysLeftInMonth > 0 ? $safeToSpend / $daysLeftInMonth : null;
+        } else {
+            $dailyBudgetRemaining = null;
+        }
+
         $recentExpenses = $user->expenses()
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
             ->latest('date')
             ->limit(5)
             ->get();
 
         $actualCategoryTotals = $user->expenses()
             ->select('category', DB::raw('SUM(amount) as total'))
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->whereDate('date', '<=', $today)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->whereDate('date', '<=', $splitDate)
             ->groupBy('category')
             ->get()
             ->keyBy('category');
 
         $scheduledCategoryTotals = $user->expenses()
             ->select('category', DB::raw('SUM(amount) as total'))
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->whereDate('date', '>', $today)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->whereDate('date', '>', $splitDate)
             ->groupBy('category')
             ->get()
             ->keyBy('category');
@@ -107,7 +132,23 @@ class DashboardController extends Controller
             ->sortByDesc('total')
             ->values();
 
+        $monthCursor = Carbon::create($year, $month, 1);
+        $prevMonth = $monthCursor->copy()->subMonth();
+        $nextMonth = $monthCursor->copy()->addMonth();
+
+        $defaultTransactionDate = $isCurrentMonth
+            ? now()->toDateString()
+            : $monthCursor->toDateString();
+
         return view('dashboard', [
+            'view_year' => $year,
+            'view_month' => $month,
+            'view_month_label' => $monthCursor->translatedFormat('F Y'),
+            'is_current_month' => $isCurrentMonth,
+            'split_date' => $splitDate,
+            'prev_period_params' => ViewMonth::queryParams($prevMonth->year, $prevMonth->month),
+            'next_period_params' => ViewMonth::queryParams($nextMonth->year, $nextMonth->month),
+            'default_transaction_date' => $defaultTransactionDate,
             'actual_income' => $actualIncome,
             'scheduled_income' => $scheduledIncome,
             'actual_expenses' => $actualExpenses,
@@ -120,6 +161,7 @@ class DashboardController extends Controller
             'projected_overspend_amount' => $projectedOverspendAmount,
             'days_until_broke' => $daysUntilBroke,
             'daily_budget_remaining' => $dailyBudgetRemaining,
+            'days_until_broke_available' => $isCurrentMonth,
             'categories_with_totals' => $categoriesWithTotals,
             'recent_expenses' => $recentExpenses,
             'expense_categories' => Expense::CATEGORIES,

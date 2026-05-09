@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Income extends Model
 {
@@ -21,10 +21,16 @@ class Income extends Model
         'name',
         'amount',
         'date',
+        'recurring_income_id',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function recurringIncome(): BelongsTo
+    {
+        return $this->belongsTo(RecurringIncome::class);
     }
 }

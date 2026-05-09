@@ -3,11 +3,21 @@
 @section('title', __('Dashboard'))
 
 @section('content')
+    @include('layouts.partials.month-navigation', ['targetRoute' => 'dashboard'])
+
     <section class="mb-6">
         <div class="rounded-xl bg-indigo-600 p-5 text-white shadow-sm">
             <p class="text-sm text-indigo-100">{{ __('Current balance') }}</p>
             <p class="mt-1 text-4xl font-bold">@money($current_balance)</p>
-            <p class="mt-2 text-sm text-indigo-100">{{ __('Money available based on income and expenses dated up to today.') }}</p>
+            @if ($is_current_month)
+                <p class="mt-2 text-sm text-indigo-100">{{ __('Money available based on income and expenses dated up to today.') }}</p>
+            @else
+                <p class="mt-2 text-sm text-indigo-100">{{ __('Net income minus expenses for :month, counted up to the last day that counts as “actual” for this view.', ['month' => $view_month_label]) }}</p>
+            @endif
+            <p class="mt-3 text-sm text-indigo-200">
+                <a href="{{ route('recurring.index') }}" class="font-semibold underline decoration-indigo-200 underline-offset-2 hover:text-white">{{ __('Monthly direct debits & pay') }}</a>
+                <span class="text-indigo-200/90"> — {{ __('set recurring items once; they appear each month automatically.') }}</span>
+            </p>
         </div>
     </section>
 
@@ -39,7 +49,10 @@
             </div>
             <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
                 <p class="text-xs text-gray-500">{{ __('Days until broke') }}</p>
-                @if (is_null($days_until_broke))
+                @if (! $days_until_broke_available)
+                    <p class="mt-1 text-2xl font-bold text-gray-900">—</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ __('Shown only when you are viewing the current calendar month.') }}</p>
+                @elseif (is_null($days_until_broke))
                     <p class="mt-1 text-2xl font-bold text-gray-900">{{ __('Not enough data') }}</p>
                     <p class="mt-2 text-xs text-gray-500">{{ __('Add expenses to estimate this.') }}</p>
                 @else
@@ -55,7 +68,10 @@
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="rounded-xl border border-blue-100 bg-blue-50 p-4 shadow-sm">
                 <p class="text-sm text-gray-600">{{ __('Daily budget') }}</p>
-                @if (is_null($daily_budget_remaining))
+                @if (! $is_current_month)
+                    <p class="mt-1 text-2xl font-bold text-gray-900">—</p>
+                    <p class="mt-2 text-sm text-gray-600">{{ __('Open the current month to see a daily spending guide for the rest of this month.') }}</p>
+                @elseif (is_null($daily_budget_remaining))
                     <p class="mt-1 text-2xl font-bold text-gray-900">{{ __('Not enough data') }}</p>
                     <p class="mt-2 text-sm text-gray-600">{{ __('No days left in this month to calculate a daily budget.') }}</p>
                 @elseif ($daily_budget_remaining < 0)
@@ -164,7 +180,12 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse ($recent_expenses as $expense)
                                 <tr>
-                                    <td class="px-2 py-3 text-gray-800">{{ $expense->name }}</td>
+                                    <td class="px-2 py-3 text-gray-800">
+                                        {{ $expense->name }}
+                                        @if ($expense->recurring_expense_id)
+                                            <span class="ml-1 inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-700" title="{{ __('From a monthly recurring rule') }}">{{ __('Monthly') }}</span>
+                                        @endif
+                                    </td>
                                     <td class="px-2 py-3 text-gray-700">{{ $expense->category }}</td>
                                     <td class="px-2 py-3 text-gray-700">{{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}</td>
                                     <td class="px-2 py-3 text-right font-semibold text-gray-900">@money($expense->amount)</td>
@@ -208,7 +229,7 @@
                     </div>
                     <div>
                         <label for="income_date" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Date') }}</label>
-                        <input id="income_date" name="income_date" type="date" value="{{ old('income_date', now()->toDateString()) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 @error('income_date') border-red-500 @enderror">
+                        <input id="income_date" name="income_date" type="date" value="{{ old('income_date', $default_transaction_date) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 @error('income_date') border-red-500 @enderror">
                         @error('income_date')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -252,7 +273,7 @@
                     </div>
                     <div>
                         <label for="expense_date" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Date') }}</label>
-                        <input id="expense_date" name="date" type="date" value="{{ old('date', now()->toDateString()) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 @error('date') border-red-500 @enderror">
+                        <input id="expense_date" name="date" type="date" value="{{ old('date', $default_transaction_date) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 @error('date') border-red-500 @enderror">
                         @error('date')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror

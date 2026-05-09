@@ -4,10 +4,10 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -39,5 +39,15 @@ class User extends Authenticatable
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function recurringExpenses(): HasMany
+    {
+        return $this->hasMany(RecurringExpense::class);
+    }
+
+    public function recurringIncomes(): HasMany
+    {
+        return $this->hasMany(RecurringIncome::class);
     }
 }

@@ -3,10 +3,12 @@
 @section('title', __('Records'))
 
 @section('content')
+    @include('layouts.partials.month-navigation', ['targetRoute' => 'records.index'])
+
     <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ __('Your records') }}</h1>
-            <p class="mt-1 text-sm text-gray-500">{{ __('Manage saved income and expenses. Dates are shown in your local format.') }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ __('Income and expenses for the month above. Dates are shown in your local format.') }}</p>
         </div>
     </div>
 
@@ -31,7 +33,7 @@
                                 <td class="px-2 py-3 text-gray-800">{{ $expense->name }}</td>
                                 <td class="px-2 py-3 text-gray-700">{{ $expense->category }}</td>
                                 <td class="px-2 py-3">
-                                    @if ($expense->date <= now()->toDateString())
+                                    @if ($expense->date <= $split_date)
                                         <span class="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">{{ __('Paid') }}</span>
                                     @else
                                         <span class="inline-flex rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">{{ __('Upcoming') }}</span>
@@ -91,7 +93,7 @@
                             <tr>
                                 <td class="px-2 py-3 text-gray-800">{{ $income->name }}</td>
                                 <td class="px-2 py-3">
-                                    @if ($income->date <= now()->toDateString())
+                                    @if ($income->date <= $split_date)
                                         <span class="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">{{ __('Received') }}</span>
                                     @else
                                         <span class="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">{{ __('Scheduled') }}</span>

@@ -5,6 +5,7 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordsController;
+use App\Http\Controllers\RecurringController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,6 +15,12 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/records', [RecordsController::class, 'index'])->name('records.index');
+
+    Route::get('/recurring', [RecurringController::class, 'index'])->name('recurring.index');
+    Route::post('/recurring/expenses', [RecurringController::class, 'storeExpense'])->name('recurring.expenses.store');
+    Route::post('/recurring/income', [RecurringController::class, 'storeIncome'])->name('recurring.income.store');
+    Route::delete('/recurring/expenses/{recurringExpense}', [RecurringController::class, 'destroyExpense'])->name('recurring.expenses.destroy');
+    Route::delete('/recurring/income/{recurringIncome}', [RecurringController::class, 'destroyIncome'])->name('recurring.income.destroy');
     Route::get('/expenses', [ExpenseController::class, 'index']);
     Route::post('/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
     Route::get('/expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
