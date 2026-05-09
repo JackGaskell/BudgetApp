@@ -23,11 +23,14 @@
                                     @money($rule->amount) · {{ $rule->category }} · {{ __('Day') }} {{ $rule->day_of_month }}
                                 </p>
                             </div>
-                            <form method="POST" action="{{ route('recurring.expenses.destroy', $rule) }}" onsubmit="return confirm(@json(__('Stop this repeat? Future months will not be added automatically.')));">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-800">{{ __('Stop repeating') }}</button>
-                            </form>
+                            <div class="flex flex-wrap items-center justify-end gap-3">
+                                <a href="{{ route('recurring.expenses.edit', $rule) }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">{{ __('Edit') }}</a>
+                                <form method="POST" action="{{ route('recurring.expenses.destroy', $rule) }}" class="inline" onsubmit="return confirm(@json(__('Stop this repeat? Future months will not be added automatically.')));">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-800">{{ __('Stop repeating') }}</button>
+                                </form>
+                            </div>
                         </li>
                     @endforeach
                 </ul>
@@ -46,11 +49,14 @@
                                 <p class="font-semibold text-gray-900">{{ $rule->name }}</p>
                                 <p class="text-xs text-gray-600">@money($rule->amount) · {{ __('Day') }} {{ $rule->day_of_month }}</p>
                             </div>
-                            <form method="POST" action="{{ route('recurring.income.destroy', $rule) }}" onsubmit="return confirm(@json(__('Stop this repeat? Future months will not be added automatically.')));">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-800">{{ __('Stop repeating') }}</button>
-                            </form>
+                            <div class="flex flex-wrap items-center justify-end gap-3">
+                                <a href="{{ route('recurring.income.edit', $rule) }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">{{ __('Edit') }}</a>
+                                <form method="POST" action="{{ route('recurring.income.destroy', $rule) }}" class="inline" onsubmit="return confirm(@json(__('Stop this repeat? Future months will not be added automatically.')));">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-800">{{ __('Stop repeating') }}</button>
+                                </form>
+                            </div>
                         </li>
                     @endforeach
                 </ul>

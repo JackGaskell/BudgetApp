@@ -7,6 +7,7 @@ use App\Services\RecurringMaterializer;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class IncomeController extends Controller
 {
@@ -50,14 +51,65 @@ class IncomeController extends Controller
         return redirect()->back()->with('status', __('Income added successfully.'));
     }
 
+    public function edit(Request $request, Income $income): View
+    {
+        $this->authorizeIncome($request, $income);
+
+        return view('income.edit', [
+            'income' => $income,
+            'return_year' => $request->query('year'),
+            'return_month' => $request->query('month'),
+        ]);
+    }
+
+    public function update(Request $request, Income $income): RedirectResponse
+    {
+        $this->authorizeIncome($request, $income);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'date' => ['required', 'date'],
+            'return_year' => ['nullable', 'integer'],
+            'return_month' => ['nullable', 'integer', 'min:1', 'max:12'],
+        ]);
+
+        $income->update([
+            'name' => $validated['name'],
+            'amount' => $validated['amount'],
+            'date' => $validated['date'],
+        ]);
+
+        return $this->redirectToRecordsAfterEdit($request)->with('status', __('Income updated successfully.'));
+    }
+
     public function destroy(Request $request, Income $income): RedirectResponse
     {
-        if ($income->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        $this->authorizeIncome($request, $income);
 
         $income->delete();
 
         return redirect()->back()->with('status', __('Income deleted successfully.'));
+    }
+
+    private function authorizeIncome(Request $request, Income $income): void
+    {
+        if ($income->user_id !== $request->user()->id) {
+            abort(403);
+        }
+    }
+
+    private function redirectToRecordsAfterEdit(Request $request): RedirectResponse
+    {
+        $year = $request->input('return_year');
+        $month = $request->input('return_month');
+        if ($year !== null && $year !== '' && $month !== null && $month !== '') {
+            return redirect()->route('records.index', [
+                'year' => (int) $year,
+                'month' => (int) $month,
+            ]);
+        }
+
+        return redirect()->route('records.index');
     }
 }

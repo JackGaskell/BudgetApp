@@ -43,7 +43,7 @@
                                 <td class="px-2 py-3 text-right text-gray-900">@money($expense->amount)</td>
                                 <td class="px-2 py-3 text-right">
                                     <div class="inline-flex flex-wrap items-center justify-end gap-2">
-                                        <a href="{{ route('expenses.edit', $expense) }}" class="inline-flex rounded-lg bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{{ __('Edit') }}</a>
+                                        <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex rounded-lg bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{{ __('Edit') }}</a>
                                         <button type="button" class="inline-flex rounded-lg bg-red-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2" onclick="document.getElementById('delete-expense-{{ $expense->id }}').showModal()">
                                             {{ __('Delete') }}
                                         </button>
@@ -102,9 +102,12 @@
                                 <td class="px-2 py-3 text-gray-700">{{ \Illuminate\Support\Carbon::parse($income->date)->format('j M Y') }}</td>
                                 <td class="px-2 py-3 text-right text-gray-900">@money($income->amount)</td>
                                 <td class="px-2 py-3 text-right">
-                                    <button type="button" class="inline-flex rounded-lg bg-red-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2" onclick="document.getElementById('delete-income-{{ $income->id }}').showModal()">
-                                        {{ __('Delete') }}
-                                    </button>
+                                    <div class="inline-flex flex-wrap items-center justify-end gap-2">
+                                        <a href="{{ route('income.edit', array_merge(['income' => $income], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex rounded-lg bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{{ __('Edit') }}</a>
+                                        <button type="button" class="inline-flex rounded-lg bg-red-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2" onclick="document.getElementById('delete-income-{{ $income->id }}').showModal()">
+                                            {{ __('Delete') }}
+                                        </button>
+                                    </div>
                                     <dialog id="delete-income-{{ $income->id }}" class="w-[calc(100vw-2rem)] max-w-md rounded-xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-black/40">
                                         <form method="POST" action="{{ route('income.destroy', $income) }}" class="p-6">
                                             @csrf

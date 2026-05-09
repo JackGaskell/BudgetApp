@@ -132,4 +132,39 @@ class RecurringManagementTest extends TestCase
         $response->assertSessionHasErrors('category');
         $this->assertDatabaseCount('recurring_expenses', 0);
     }
+
+    public function test_user_can_update_recurring_expense_and_syncs_linked_rows(): void
+    {
+        $user = User::factory()->create();
+        $rule = RecurringExpense::factory()->for($user)->create([
+            'name' => 'Rent',
+            'amount' => 400,
+            'category' => 'Housing & Utilities',
+            'day_of_month' => 1,
+            'starts_on' => '2026-01-01',
+        ]);
+        Expense::factory()->for($user)->create([
+            'recurring_expense_id' => $rule->id,
+            'name' => 'Rent',
+            'amount' => 400,
+            'category' => 'Housing & Utilities',
+            'date' => '2026-02-01',
+        ]);
+
+        $response = $this->actingAs($user)->patch(route('recurring.expenses.update', $rule), [
+            'name' => 'Rent updated',
+            'amount' => '450.00',
+            'category' => 'Housing & Utilities',
+            'day_of_month' => 3,
+        ]);
+
+        $response->assertRedirect(route('recurring.index'));
+        $this->assertDatabaseHas('expenses', [
+            'user_id' => $user->id,
+            'recurring_expense_id' => $rule->id,
+            'name' => 'Rent updated',
+            'amount' => '450.00',
+            'date' => '2026-02-03',
+        ]);
+    }
 }

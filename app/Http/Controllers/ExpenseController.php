@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\View\View;
 
 class ExpenseController extends Controller
@@ -29,6 +30,8 @@ class ExpenseController extends Controller
         return view('expenses.edit', [
             'expense' => $expense,
             'expense_categories' => Expense::CATEGORIES,
+            'return_year' => $request->query('year'),
+            'return_month' => $request->query('month'),
         ]);
     }
 
@@ -67,11 +70,17 @@ class ExpenseController extends Controller
     {
         $this->authorizeExpense($request, $expense);
 
-        $validated = $request->validate($this->expenseValidationRules());
+        $validated = $request->validate(array_merge(
+            $this->expenseValidationRules(),
+            [
+                'return_year' => ['nullable', 'integer'],
+                'return_month' => ['nullable', 'integer', 'min:1', 'max:12'],
+            ]
+        ));
 
-        $expense->update($validated);
+        $expense->update(Arr::only($validated, ['name', 'amount', 'category', 'date']));
 
-        return redirect()->route('records.index')->with('status', __('Expense updated successfully.'));
+        return $this->redirectToRecordsAfterEdit($request)->with('status', __('Expense updated successfully.'));
     }
 
     public function destroy(Request $request, Expense $expense): RedirectResponse
@@ -103,5 +112,19 @@ class ExpenseController extends Controller
         if ($expense->user_id !== $request->user()->id) {
             abort(403);
         }
+    }
+
+    private function redirectToRecordsAfterEdit(Request $request): RedirectResponse
+    {
+        $year = $request->input('return_year');
+        $month = $request->input('return_month');
+        if ($year !== null && $year !== '' && $month !== null && $month !== '') {
+            return redirect()->route('records.index', [
+                'year' => (int) $year,
+                'month' => (int) $month,
+            ]);
+        }
+
+        return redirect()->route('records.index');
     }
 }

@@ -209,6 +209,8 @@ class ExpenseUpdateTest extends TestCase
             ]));
 
         $response->assertOk();
-        $response->assertSee(route('expenses.edit', $expense), false);
+        $response->assertSee('/expenses/'.$expense->id.'/edit', false);
+        $response->assertSee('year='.now()->year, false);
+        $response->assertSee('month='.now()->month, false);
     }
 }
