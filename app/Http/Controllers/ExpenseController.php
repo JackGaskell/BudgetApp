@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
+use App\Services\RecurringMaterializer;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ExpenseController extends Controller
@@ -30,9 +32,31 @@ class ExpenseController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, RecurringMaterializer $materializer): RedirectResponse
     {
-        $validated = $request->validate($this->expenseValidationRules());
+        $validated = $request->validate(array_merge(
+            $this->expenseValidationRules(),
+            ['recurring' => ['sometimes', 'boolean']]
+        ));
+
+        if ($request->boolean('recurring')) {
+            $date = Carbon::parse($validated['date']);
+            $request->user()->recurringExpenses()->create([
+                'name' => $validated['name'],
+                'amount' => $validated['amount'],
+                'category' => $validated['category'],
+                'day_of_month' => $date->day,
+                'starts_on' => $validated['date'],
+                'ends_on' => null,
+            ]);
+            $materializer->materializeMonth($request->user(), $date->year, $date->month);
+            $materializer->materializeUpcomingMonths($request->user());
+
+            return redirect()->back()->with(
+                'status',
+                __('Expense added. It repeats each month on the same calendar day until you remove it under Recurring.')
+            );
+        }
 
         $request->user()->expenses()->create($validated);
 

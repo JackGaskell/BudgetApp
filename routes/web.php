@@ -17,8 +17,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/records', [RecordsController::class, 'index'])->name('records.index');
 
     Route::get('/recurring', [RecurringController::class, 'index'])->name('recurring.index');
-    Route::post('/recurring/expenses', [RecurringController::class, 'storeExpense'])->name('recurring.expenses.store');
-    Route::post('/recurring/income', [RecurringController::class, 'storeIncome'])->name('recurring.income.store');
     Route::delete('/recurring/expenses/{recurringExpense}', [RecurringController::class, 'destroyExpense'])->name('recurring.expenses.destroy');
     Route::delete('/recurring/income/{recurringIncome}', [RecurringController::class, 'destroyIncome'])->name('recurring.income.destroy');
     Route::get('/expenses', [ExpenseController::class, 'index']);
