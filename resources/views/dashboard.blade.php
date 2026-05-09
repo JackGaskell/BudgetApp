@@ -14,10 +14,6 @@
             @else
                 <p class="mt-2 text-sm text-indigo-100">{{ __('Net income minus expenses for :month, counted up to the last day that counts as “actual” for this view.', ['month' => $view_month_label]) }}</p>
             @endif
-            <p class="mt-3 text-sm text-indigo-200">
-                <a href="{{ route('records.index', \App\Support\ViewMonth::queryParams(now()->year, now()->month)) }}" class="font-semibold underline decoration-indigo-200 underline-offset-2 hover:text-white">{{ __('Records') }}</a>
-                <span class="text-indigo-200/90"> — {{ __('Repeating items are labelled there; edit a line to turn monthly repeat on or off.') }}</span>
-            </p>
         </div>
     </section>
 
@@ -35,12 +31,12 @@
             <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
                 <p class="text-xs text-gray-500">{{ __('Scheduled income') }}</p>
                 <p class="mt-1 text-2xl font-bold text-gray-900">@money($scheduled_income)</p>
-                <p class="mt-2 text-xs text-gray-500">{{ __('Income expected later this month.') }}</p>
+                <p class="mt-2 text-xs text-gray-500">{{ __('Expected later in :month.', ['month' => $view_month_label]) }}</p>
             </div>
             <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
                 <p class="text-xs text-gray-500">{{ __('Scheduled expenses') }}</p>
                 <p class="mt-1 text-2xl font-bold text-gray-900">@money($scheduled_expenses)</p>
-                <p class="mt-2 text-xs text-gray-500">{{ __('Future bills or spending still to come this month.') }}</p>
+                <p class="mt-2 text-xs text-gray-500">{{ __('Still to come in :month.', ['month' => $view_month_label]) }}</p>
             </div>
             <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
                 <p class="text-xs text-gray-500">{{ __('Projected end-of-month balance') }}</p>
@@ -172,6 +168,7 @@
                         <thead class="border-b border-gray-200 text-gray-600">
                             <tr>
                                 <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Name') }}</th>
+                                <th scope="col" class="px-2 py-3 text-center font-semibold">{{ __('Repeats') }}</th>
                                 <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Category') }}</th>
                                 <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Date') }}</th>
                                 <th scope="col" class="px-2 py-3 text-right font-semibold">{{ __('Amount') }} (£)</th>
@@ -180,10 +177,12 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse ($recent_expenses as $expense)
                                 <tr>
-                                    <td class="px-2 py-3 text-gray-800">
-                                        {{ $expense->name }}
+                                    <td class="px-2 py-3 text-gray-800">{{ $expense->name }}</td>
+                                    <td class="px-2 py-3 text-center align-top">
                                         @if ($expense->recurring_expense_id)
-                                            <span class="ml-1 inline-flex rounded-full bg-violet-100 px-1.5 py-0.5 text-xs font-medium text-violet-800" title="{{ __('Repeats every month') }}">{{ __('Repeats') }}</span>
+                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem]" title="{{ __('Repeats every month') }}">{{ __('Yes') }}</span>
+                                        @else
+                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium tabular-nums text-gray-700 sm:min-w-[2.5rem]">{{ __('No') }}</span>
                                         @endif
                                     </td>
                                     <td class="px-2 py-3 text-gray-700">{{ $expense->category }}</td>
@@ -192,7 +191,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-2 py-4 text-sm text-gray-500">{{ __('No expenses yet. Add one below.') }}</td>
+                                    <td colspan="5" class="px-2 py-4 text-sm text-gray-500">{{ __('No expenses yet. Add one below.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
