@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Income;
 use App\Services\RecurringMaterializer;
+use App\Services\RecurringRuleSync;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class IncomeController extends Controller
 
             return redirect()->back()->with(
                 'status',
-                __('Income added. It repeats each month on the same calendar day until you remove it under Recurring.')
+                __('Income added. It repeats each month on the same calendar day—you can turn that off when you edit it in Records.')
             );
         }
 
@@ -62,7 +63,7 @@ class IncomeController extends Controller
         ]);
     }
 
-    public function update(Request $request, Income $income): RedirectResponse
+    public function update(Request $request, Income $income, RecurringMaterializer $materializer, RecurringRuleSync $ruleSync): RedirectResponse
     {
         $this->authorizeIncome($request, $income);
 
@@ -72,13 +73,55 @@ class IncomeController extends Controller
             'date' => ['required', 'date'],
             'return_year' => ['nullable', 'integer'],
             'return_month' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'income_recurring' => ['sometimes', 'boolean'],
         ]);
 
-        $income->update([
-            'name' => $validated['name'],
-            'amount' => $validated['amount'],
-            'date' => $validated['date'],
-        ]);
+        $wantsRecurring = $request->boolean('income_recurring');
+        $hadRecurring = $income->recurring_income_id !== null;
+
+        if ($hadRecurring && ! $wantsRecurring) {
+            $rule = $income->recurringIncome;
+            if ($rule && $rule->user_id === $request->user()->id) {
+                $rule->delete();
+            }
+            $income->refresh();
+        }
+
+        if ($wantsRecurring && $income->recurring_income_id) {
+            $rule = $income->recurringIncome;
+            if ($rule !== null) {
+                $date = Carbon::parse($validated['date']);
+                $rule->update([
+                    'name' => $validated['name'],
+                    'amount' => $validated['amount'],
+                    'day_of_month' => $date->day,
+                ]);
+                $ruleSync->syncIncomeRuleToTransactions($rule->fresh());
+            }
+        } elseif ($wantsRecurring && ! $income->recurring_income_id) {
+            $income->update([
+                'name' => $validated['name'],
+                'amount' => $validated['amount'],
+                'date' => $validated['date'],
+            ]);
+            $date = Carbon::parse($validated['date']);
+            $rule = $request->user()->recurringIncomes()->create([
+                'name' => $validated['name'],
+                'amount' => $validated['amount'],
+                'day_of_month' => $date->day,
+                'starts_on' => $validated['date'],
+                'ends_on' => null,
+            ]);
+            $income->update(['recurring_income_id' => $rule->id]);
+            $materializer->materializeMonth($request->user(), $date->year, $date->month);
+            $materializer->materializeUpcomingMonths($request->user());
+        } else {
+            $income->update([
+                'name' => $validated['name'],
+                'amount' => $validated['amount'],
+                'date' => $validated['date'],
+            ]);
+        }
 
         return $this->redirectToRecordsAfterEdit($request)->with('status', __('Income updated successfully.'));
     }

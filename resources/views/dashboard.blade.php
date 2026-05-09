@@ -15,8 +15,8 @@
                 <p class="mt-2 text-sm text-indigo-100">{{ __('Net income minus expenses for :month, counted up to the last day that counts as “actual” for this view.', ['month' => $view_month_label]) }}</p>
             @endif
             <p class="mt-3 text-sm text-indigo-200">
-                <a href="{{ route('recurring.index') }}" class="font-semibold underline decoration-indigo-200 underline-offset-2 hover:text-white">{{ __('Monthly repeats') }}</a>
-                <span class="text-indigo-200/90"> — {{ __('tick “Repeat every month” when adding income or expense below, or stop a repeat here.') }}</span>
+                <a href="{{ route('records.index', \App\Support\ViewMonth::queryParams(now()->year, now()->month)) }}" class="font-semibold underline decoration-indigo-200 underline-offset-2 hover:text-white">{{ __('Records') }}</a>
+                <span class="text-indigo-200/90"> — {{ __('Repeating items are labelled there; edit a line to turn monthly repeat on or off.') }}</span>
             </p>
         </div>
     </section>
@@ -183,7 +183,7 @@
                                     <td class="px-2 py-3 text-gray-800">
                                         {{ $expense->name }}
                                         @if ($expense->recurring_expense_id)
-                                            <span class="ml-1 inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-700" title="{{ __('From a monthly recurring rule') }}">{{ __('Monthly') }}</span>
+                                            <span class="ml-1 inline-flex rounded-full bg-violet-100 px-1.5 py-0.5 text-xs font-medium text-violet-800" title="{{ __('Repeats every month') }}">{{ __('Repeats') }}</span>
                                         @endif
                                     </td>
                                     <td class="px-2 py-3 text-gray-700">{{ $expense->category }}</td>
@@ -236,7 +236,7 @@
                     </div>
                     <div class="flex items-start gap-3">
                         <input id="income_recurring" name="income_recurring" type="checkbox" value="1" @checked(old('income_recurring')) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                        <label for="income_recurring" class="text-sm text-gray-700">{{ __('Repeat every month on this calendar day until I remove it under Recurring.') }}</label>
+                        <label for="income_recurring" class="text-sm text-gray-700">{{ __('Repeat every month on this calendar day (you can change this when you edit the income in Records).') }}</label>
                     </div>
                     <button type="submit" class="w-full rounded-lg border border-gray-900 bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 sm:w-auto">{{ __('Add income') }}</button>
                 </form>
@@ -284,7 +284,7 @@
                     </div>
                     <div class="flex items-start gap-3">
                         <input id="expense_recurring" name="recurring" type="checkbox" value="1" @checked(old('recurring')) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                        <label for="expense_recurring" class="text-sm text-gray-700">{{ __('Repeat every month on this calendar day until I remove it under Recurring.') }}</label>
+                        <label for="expense_recurring" class="text-sm text-gray-700">{{ __('Repeat every month on this calendar day (you can change this when you edit the expense in Records).') }}</label>
                     </div>
                     <button type="submit" class="w-full rounded-lg border border-gray-900 bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 sm:w-auto">{{ __('Add expense') }}</button>
                 </form>

@@ -12,7 +12,6 @@
             <div class="hidden items-center gap-1 md:flex">
                 <a href="{{ route('dashboard') }}" class="{{ $navLink }} {{ request()->routeIs('dashboard') ? $navActive : $navIdle }}">{{ __('Dashboard') }}</a>
                 <a href="{{ route('records.index', \App\Support\ViewMonth::queryParams(now()->year, now()->month)) }}" class="{{ $navLink }} {{ request()->routeIs('records.index') ? $navActive : $navIdle }}">{{ __('Records') }}</a>
-                <a href="{{ route('recurring.index') }}" class="{{ $navLink }} {{ request()->routeIs('recurring.index') ? $navActive : $navIdle }}">{{ __('Recurring') }}</a>
                 <a href="{{ route('profile.edit') }}" class="{{ $navLink }} {{ request()->routeIs('profile.edit') ? $navActive : $navIdle }}">{{ __('Profile') }}</a>
             </div>
         </div>
@@ -46,7 +45,6 @@
         <div class="mx-auto max-w-6xl space-y-1 px-4 py-3 sm:px-6">
             <a href="{{ route('dashboard') }}" class="block rounded-lg px-3 py-2 text-base font-medium {{ request()->routeIs('dashboard') ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('Dashboard') }}</a>
             <a href="{{ route('records.index', \App\Support\ViewMonth::queryParams(now()->year, now()->month)) }}" class="block rounded-lg px-3 py-2 text-base font-medium {{ request()->routeIs('records.index') ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('Records') }}</a>
-            <a href="{{ route('recurring.index') }}" class="block rounded-lg px-3 py-2 text-base font-medium {{ request()->routeIs('recurring.index') ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('Recurring') }}</a>
             <a href="{{ route('profile.edit') }}" class="block rounded-lg px-3 py-2 text-base font-medium {{ request()->routeIs('profile.edit') ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('Profile') }}</a>
             <div class="border-t border-gray-100 pt-3 text-sm text-gray-500">{{ auth()->user()->name }}</div>
             <form method="POST" action="{{ route('logout') }}" class="pt-2">

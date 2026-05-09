@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Services\RecurringMaterializer;
+use App\Services\RecurringRuleSync;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -57,7 +58,7 @@ class ExpenseController extends Controller
 
             return redirect()->back()->with(
                 'status',
-                __('Expense added. It repeats each month on the same calendar day until you remove it under Recurring.')
+                __('Expense added. It repeats each month on the same calendar day—you can turn that off when you edit it in Records.')
             );
         }
 
@@ -66,7 +67,7 @@ class ExpenseController extends Controller
         return redirect()->back()->with('status', __('Expense added successfully.'));
     }
 
-    public function update(Request $request, Expense $expense): RedirectResponse
+    public function update(Request $request, Expense $expense, RecurringMaterializer $materializer, RecurringRuleSync $ruleSync): RedirectResponse
     {
         $this->authorizeExpense($request, $expense);
 
@@ -75,10 +76,50 @@ class ExpenseController extends Controller
             [
                 'return_year' => ['nullable', 'integer'],
                 'return_month' => ['nullable', 'integer', 'min:1', 'max:12'],
+                'recurring' => ['sometimes', 'boolean'],
             ]
         ));
 
-        $expense->update(Arr::only($validated, ['name', 'amount', 'category', 'date']));
+        $wantsRecurring = $request->boolean('recurring');
+        $hadRecurring = $expense->recurring_expense_id !== null;
+
+        if ($hadRecurring && ! $wantsRecurring) {
+            $rule = $expense->recurringExpense;
+            if ($rule && $rule->user_id === $request->user()->id) {
+                $rule->delete();
+            }
+            $expense->refresh();
+        }
+
+        if ($wantsRecurring && $expense->recurring_expense_id) {
+            $rule = $expense->recurringExpense;
+            if ($rule !== null) {
+                $date = Carbon::parse($validated['date']);
+                $rule->update([
+                    'name' => $validated['name'],
+                    'amount' => $validated['amount'],
+                    'category' => $validated['category'],
+                    'day_of_month' => $date->day,
+                ]);
+                $ruleSync->syncExpenseRuleToTransactions($rule->fresh());
+            }
+        } elseif ($wantsRecurring && ! $expense->recurring_expense_id) {
+            $expense->update(Arr::only($validated, ['name', 'amount', 'category', 'date']));
+            $date = Carbon::parse($validated['date']);
+            $rule = $request->user()->recurringExpenses()->create([
+                'name' => $validated['name'],
+                'amount' => $validated['amount'],
+                'category' => $validated['category'],
+                'day_of_month' => $date->day,
+                'starts_on' => $validated['date'],
+                'ends_on' => null,
+            ]);
+            $expense->update(['recurring_expense_id' => $rule->id]);
+            $materializer->materializeMonth($request->user(), $date->year, $date->month);
+            $materializer->materializeUpcomingMonths($request->user());
+        } else {
+            $expense->update(Arr::only($validated, ['name', 'amount', 'category', 'date']));
+        }
 
         return $this->redirectToRecordsAfterEdit($request)->with('status', __('Expense updated successfully.'));
     }

@@ -8,7 +8,7 @@
             <h1 class="text-2xl font-bold text-gray-900">{{ __('Edit income') }}</h1>
             <p class="mt-1 text-sm text-gray-500">{{ __('Update the details below. Amounts are in pounds sterling (GBP).') }}</p>
             @if ($income->recurring_income_id)
-                <p class="mt-2 text-sm text-amber-800">{{ __('This entry is from a monthly repeat. Editing it only changes this month—use Recurring → Edit to change every month at once.') }}</p>
+                <p class="mt-2 text-sm text-gray-600">{{ __('With “Repeat monthly” on, saving updates every month this income appears in your records.') }}</p>
             @endif
         </div>
 
@@ -43,6 +43,10 @@
                     @error('date')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                </div>
+                <div class="flex items-start gap-3 border-t border-gray-100 pt-4">
+                    <input id="income_recurring_edit" name="income_recurring" type="checkbox" value="1" @checked(old('income_recurring', (bool) $income->recurring_income_id)) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
+                    <label for="income_recurring_edit" class="text-sm text-gray-700">{{ __('Repeat monthly on this calendar day') }}</label>
                 </div>
                 <div class="flex flex-wrap gap-3 pt-2">
                     <button type="submit" class="rounded-lg border border-gray-900 bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">{{ __('Save changes') }}</button>

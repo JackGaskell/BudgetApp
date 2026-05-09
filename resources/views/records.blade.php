@@ -8,7 +8,7 @@
     <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ __('Your records') }}</h1>
-            <p class="mt-1 text-sm text-gray-500">{{ __('Income and expenses for the month above. Dates are shown in your local format.') }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ __('Income and expenses for the month above. “Repeats” marks monthly repeats—edit a row to turn that on or off.') }}</p>
         </div>
     </div>
 
@@ -20,6 +20,7 @@
                     <thead class="border-b border-gray-200 text-gray-600">
                         <tr>
                             <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Name') }}</th>
+                            <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Repeats') }}</th>
                             <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Category') }}</th>
                             <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Status') }}</th>
                             <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Date') }}</th>
@@ -31,6 +32,13 @@
                         @forelse ($expenses as $expense)
                             <tr>
                                 <td class="px-2 py-3 text-gray-800">{{ $expense->name }}</td>
+                                <td class="px-2 py-3 text-gray-600">
+                                    @if ($expense->recurring_expense_id)
+                                        <span class="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800" title="{{ __('This amount repeats every month') }}">{{ __('Yes') }}</span>
+                                    @else
+                                        <span class="text-xs text-gray-400">{{ __('—') }}</span>
+                                    @endif
+                                </td>
                                 <td class="px-2 py-3 text-gray-700">{{ $expense->category }}</td>
                                 <td class="px-2 py-3">
                                     @if ($expense->date <= $split_date)
@@ -64,7 +72,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-2 py-6 text-sm text-gray-500">
+                                <td colspan="7" class="px-2 py-6 text-sm text-gray-500">
                                     <p class="font-medium text-gray-800">{{ __('No expenses yet') }}</p>
                                     <p class="mt-1">{{ __('Add an expense from the dashboard to see it here.') }}</p>
                                 </td>
@@ -82,6 +90,7 @@
                     <thead class="border-b border-gray-200 text-gray-600">
                         <tr>
                             <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Name') }}</th>
+                            <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Repeats') }}</th>
                             <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Status') }}</th>
                             <th scope="col" class="px-2 py-3 text-left font-semibold">{{ __('Date') }}</th>
                             <th scope="col" class="px-2 py-3 text-right font-semibold">{{ __('Amount') }} (£)</th>
@@ -92,6 +101,13 @@
                         @forelse ($incomes as $income)
                             <tr>
                                 <td class="px-2 py-3 text-gray-800">{{ $income->name }}</td>
+                                <td class="px-2 py-3 text-gray-600">
+                                    @if ($income->recurring_income_id)
+                                        <span class="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800" title="{{ __('This amount repeats every month') }}">{{ __('Yes') }}</span>
+                                    @else
+                                        <span class="text-xs text-gray-400">{{ __('—') }}</span>
+                                    @endif
+                                </td>
                                 <td class="px-2 py-3">
                                     @if ($income->date <= $split_date)
                                         <span class="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">{{ __('Received') }}</span>
@@ -124,7 +140,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-2 py-6 text-sm text-gray-500">
+                                <td colspan="6" class="px-2 py-6 text-sm text-gray-500">
                                     <p class="font-medium text-gray-800">{{ __('No income yet') }}</p>
                                     <p class="mt-1">{{ __('Add income from the dashboard to see it here.') }}</p>
                                 </td>
