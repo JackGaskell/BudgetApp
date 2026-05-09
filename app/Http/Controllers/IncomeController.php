@@ -37,10 +37,7 @@ class IncomeController extends Controller
             $materializer->materializeMonth($request->user(), $date->year, $date->month);
             $materializer->materializeUpcomingMonths($request->user());
 
-            return redirect()->back()->with(
-                'status',
-                __('Income added. It repeats each month on the same calendar day—you can turn that off when you edit it in Records.')
-            );
+            return redirect()->back()->with('status', __('Income added successfully.'));
         }
 
         $request->user()->incomes()->create([

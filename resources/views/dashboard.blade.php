@@ -180,7 +180,7 @@
                                     <td class="px-2 py-3 text-gray-800">{{ $expense->name }}</td>
                                     <td class="px-2 py-3 text-center align-top">
                                         @if ($expense->recurring_expense_id)
-                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem]" title="{{ __('Repeats every month') }}">{{ __('Yes') }}</span>
+                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem]" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
                                         @else
                                             <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium tabular-nums text-gray-700 sm:min-w-[2.5rem]">{{ __('No') }}</span>
                                         @endif
@@ -191,7 +191,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-2 py-4 text-sm text-gray-500">{{ __('No expenses yet. Add one below.') }}</td>
+                                    <td colspan="5" class="px-2 py-4 text-sm text-gray-500">{{ __('No expenses yet. Use Add transaction in the toolbar or press N.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -201,93 +201,4 @@
         </div>
     </section>
 
-    <section class="mb-6 space-y-3">
-        <h2 class="text-lg font-bold text-gray-900">{{ __('Add transactions') }}</h2>
-        <p class="text-sm text-gray-500">{{ __('All amounts are in pounds sterling (GBP).') }}</p>
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-                <h3 class="mb-4 text-base font-bold text-gray-900">{{ __('Add income') }}</h3>
-                <form method="POST" action="{{ route('income.store') }}" class="space-y-4" novalidate>
-                    @csrf
-                    <div>
-                        <label for="income_name" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Name') }}</label>
-                        <input id="income_name" name="income_name" type="text" value="{{ old('income_name') }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 @error('income_name') border-red-500 @enderror">
-                        @error('income_name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="income_amount" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Amount') }} (£)</label>
-                        <div class="flex overflow-hidden rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-gray-900 focus-within:ring-offset-0 @error('income_amount') border-red-500 @enderror">
-                            <span class="flex shrink-0 items-center border-r border-gray-300 bg-gray-50 px-3 text-sm font-medium text-gray-600" aria-hidden="true">£</span>
-                            <input id="income_amount" name="income_amount" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00" value="{{ old('income_amount') }}" required class="min-w-0 flex-1 border-0 px-3 py-2 focus:ring-0">
-                        </div>
-                        @error('income_amount')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="income_date" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Date') }}</label>
-                        <input id="income_date" name="income_date" type="date" value="{{ old('income_date', $default_transaction_date) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 @error('income_date') border-red-500 @enderror">
-                        @error('income_date')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <input id="income_recurring" name="income_recurring" type="checkbox" value="1" @checked(old('income_recurring')) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                        <label for="income_recurring" class="text-sm text-gray-700">{{ __('Repeat every month on this calendar day (you can change this when you edit the income in Records).') }}</label>
-                    </div>
-                    <button type="submit" class="w-full rounded-lg border border-gray-900 bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 sm:w-auto">{{ __('Add income') }}</button>
-                </form>
-            </div>
-
-            <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-                <h3 class="mb-4 text-base font-bold text-gray-900">{{ __('Add expense') }}</h3>
-                <form method="POST" action="{{ route('expenses.store') }}" class="space-y-4" novalidate>
-                    @csrf
-                    <div>
-                        <label for="expense_name" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Name') }}</label>
-                        <input id="expense_name" name="name" type="text" value="{{ old('name') }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 @error('name') border-red-500 @enderror">
-                        @error('name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="expense_amount" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Amount') }} (£)</label>
-                        <div class="flex overflow-hidden rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-gray-900 focus-within:ring-offset-0 @error('amount') border-red-500 @enderror">
-                            <span class="flex shrink-0 items-center border-r border-gray-300 bg-gray-50 px-3 text-sm font-medium text-gray-600" aria-hidden="true">£</span>
-                            <input id="expense_amount" name="amount" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00" value="{{ old('amount') }}" required class="min-w-0 flex-1 border-0 px-3 py-2 focus:ring-0">
-                        </div>
-                        @error('amount')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="expense_category" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Category') }}</label>
-                        <select id="expense_category" name="category" required class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 @error('category') border-red-500 @enderror">
-                            <option value="" disabled @selected(! old('category'))>{{ __('Select a category') }}</option>
-                            @foreach ($expense_categories as $category)
-                                <option value="{{ $category }}" @selected(old('category') === $category)>{{ $category }}</option>
-                            @endforeach
-                        </select>
-                        @error('category')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="expense_date" class="mb-1 block text-sm font-medium text-gray-700">{{ __('Date') }}</label>
-                        <input id="expense_date" name="date" type="date" value="{{ old('date', $default_transaction_date) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 @error('date') border-red-500 @enderror">
-                        @error('date')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <input id="expense_recurring" name="recurring" type="checkbox" value="1" @checked(old('recurring')) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                        <label for="expense_recurring" class="text-sm text-gray-700">{{ __('Repeat every month on this calendar day (you can change this when you edit the expense in Records).') }}</label>
-                    </div>
-                    <button type="submit" class="w-full rounded-lg border border-gray-900 bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 sm:w-auto">{{ __('Add expense') }}</button>
-                </form>
-            </div>
-        </div>
-    </section>
 @endsection

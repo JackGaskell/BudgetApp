@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Expense;
 use App\Models\User;
 use App\Services\RecurringMaterializer;
 use App\Support\ViewMonth;
@@ -136,10 +135,6 @@ class DashboardController extends Controller
         $prevMonth = $monthCursor->copy()->subMonth();
         $nextMonth = $monthCursor->copy()->addMonth();
 
-        $defaultTransactionDate = $isCurrentMonth
-            ? now()->toDateString()
-            : $monthCursor->toDateString();
-
         return view('dashboard', [
             'view_year' => $year,
             'view_month' => $month,
@@ -148,7 +143,6 @@ class DashboardController extends Controller
             'split_date' => $splitDate,
             'prev_period_params' => ViewMonth::queryParams($prevMonth->year, $prevMonth->month),
             'next_period_params' => ViewMonth::queryParams($nextMonth->year, $nextMonth->month),
-            'default_transaction_date' => $defaultTransactionDate,
             'actual_income' => $actualIncome,
             'scheduled_income' => $scheduledIncome,
             'actual_expenses' => $actualExpenses,
@@ -164,7 +158,6 @@ class DashboardController extends Controller
             'days_until_broke_available' => $isCurrentMonth,
             'categories_with_totals' => $categoriesWithTotals,
             'recent_expenses' => $recentExpenses,
-            'expense_categories' => Expense::CATEGORIES,
         ]);
     }
 }
