@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Expense;
+use App\Models\Income;
 use App\Models\RecurringExpense;
 use App\Models\User;
 use App\Support\ViewMonth;
@@ -118,6 +119,85 @@ class RecurringManagementTest extends TestCase
         ]);
     }
 
+    public function test_stopping_recurring_expense_deletes_materialized_rows_in_other_months(): void
+    {
+        $user = User::factory()->create();
+        $rule = RecurringExpense::factory()->for($user)->create([
+            'name' => 'Sub',
+            'amount' => 9.99,
+            'category' => 'Entertainment & Subscriptions',
+            'day_of_month' => 10,
+            'starts_on' => '2026-01-10',
+        ]);
+        $keep = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => $rule->id,
+            'name' => 'Sub',
+            'amount' => 9.99,
+            'category' => 'Entertainment & Subscriptions',
+            'date' => '2026-02-10',
+        ]);
+        $otherMonth = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => $rule->id,
+            'name' => 'Sub',
+            'amount' => 9.99,
+            'category' => 'Entertainment & Subscriptions',
+            'date' => '2026-03-10',
+        ]);
+
+        $this->actingAs($user)->patch(route('expenses.update', $keep), [
+            'name' => 'Sub',
+            'amount' => '9.99',
+            'category' => 'Entertainment & Subscriptions',
+            'date' => '2026-02-10',
+        ])->assertRedirect(route('records.index'));
+
+        $this->assertDatabaseMissing('expenses', ['id' => $otherMonth->id]);
+        $this->assertDatabaseMissing('recurring_expenses', ['id' => $rule->id]);
+        $this->assertDatabaseHas('expenses', [
+            'id' => $keep->id,
+            'recurring_expense_id' => null,
+        ]);
+        $this->assertSame(1, Expense::query()->where('user_id', $user->id)->count());
+    }
+
+    public function test_stopping_recurring_income_deletes_materialized_rows_in_other_months(): void
+    {
+        $user = User::factory()->create();
+        $rule = $user->recurringIncomes()->create([
+            'name' => 'Salary',
+            'amount' => 1000,
+            'day_of_month' => 25,
+            'starts_on' => '2026-01-25',
+            'ends_on' => null,
+        ]);
+        $keep = $user->incomes()->create([
+            'recurring_income_id' => $rule->id,
+            'name' => 'Salary',
+            'amount' => 1000,
+            'date' => '2026-02-25',
+        ]);
+        $otherMonth = $user->incomes()->create([
+            'recurring_income_id' => $rule->id,
+            'name' => 'Salary',
+            'amount' => 1000,
+            'date' => '2026-03-25',
+        ]);
+
+        $this->actingAs($user)->patch(route('income.update', $keep), [
+            'name' => 'Salary',
+            'amount' => '1000.00',
+            'date' => '2026-02-25',
+        ])->assertRedirect(route('records.index'));
+
+        $this->assertDatabaseMissing('incomes', ['id' => $otherMonth->id]);
+        $this->assertDatabaseMissing('recurring_incomes', ['id' => $rule->id]);
+        $this->assertDatabaseHas('incomes', [
+            'id' => $keep->id,
+            'recurring_income_id' => null,
+        ]);
+        $this->assertSame(1, Income::query()->where('user_id', $user->id)->count());
+    }
+
     public function test_user_cannot_stop_another_users_recurring_from_expense(): void
     {
         $owner = User::factory()->create();
@@ -152,6 +232,129 @@ class RecurringManagementTest extends TestCase
 
         $response->assertSessionHasErrors('category');
         $this->assertDatabaseCount('recurring_expenses', 0);
+    }
+
+    public function test_deleting_recurring_linked_expense_removes_rule_and_all_materialized_rows(): void
+    {
+        $user = User::factory()->create();
+        $rule = RecurringExpense::factory()->for($user)->create([
+            'day_of_month' => 10,
+            'starts_on' => '2026-01-10',
+            'category' => 'Food',
+        ]);
+        $feb = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => $rule->id,
+            'category' => 'Food',
+            'date' => '2026-02-10',
+        ]);
+        $mar = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => $rule->id,
+            'category' => 'Food',
+            'date' => '2026-03-10',
+        ]);
+
+        $this->actingAs($user)->delete(route('expenses.destroy', $feb));
+
+        $this->assertDatabaseMissing('recurring_expenses', ['id' => $rule->id]);
+        $this->assertDatabaseMissing('expenses', ['id' => $feb->id]);
+        $this->assertDatabaseMissing('expenses', ['id' => $mar->id]);
+    }
+
+    public function test_deleting_one_off_expense_removes_row(): void
+    {
+        $user = User::factory()->create();
+        $expense = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => null,
+        ]);
+
+        $this->actingAs($user)->delete(route('expenses.destroy', $expense));
+
+        $this->assertDatabaseMissing('expenses', ['id' => $expense->id]);
+    }
+
+    public function test_deleting_recurring_expense_also_removes_orphan_copies_in_other_months(): void
+    {
+        $user = User::factory()->create();
+        $rule = RecurringExpense::factory()->for($user)->create([
+            'name' => 'Sky TV',
+            'amount' => 100,
+            'category' => 'Entertainment & Subscriptions',
+            'day_of_month' => 25,
+            'starts_on' => '2026-01-25',
+        ]);
+        $linked = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => $rule->id,
+            'name' => 'Sky TV',
+            'amount' => 100,
+            'category' => 'Entertainment & Subscriptions',
+            'date' => '2026-02-25',
+        ]);
+        $orphanOtherMonth = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => null,
+            'name' => 'Sky TV',
+            'amount' => 100,
+            'category' => 'Entertainment & Subscriptions',
+            'date' => '2026-03-25',
+        ]);
+
+        $this->actingAs($user)->delete(route('expenses.destroy', $linked));
+
+        $this->assertDatabaseMissing('expenses', ['id' => $orphanOtherMonth->id]);
+        $this->assertSame(0, Expense::query()->where('user_id', $user->id)->count());
+    }
+
+    public function test_deleting_one_off_expense_removes_matching_orphans_in_other_months(): void
+    {
+        $user = User::factory()->create();
+        $feb = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => null,
+            'name' => 'Sky TV',
+            'amount' => 50,
+            'category' => 'Entertainment & Subscriptions',
+            'date' => '2026-02-25',
+        ]);
+        $apr = Expense::factory()->for($user)->create([
+            'recurring_expense_id' => null,
+            'name' => 'Sky TV',
+            'amount' => 50,
+            'category' => 'Entertainment & Subscriptions',
+            'date' => '2026-04-25',
+        ]);
+
+        $this->actingAs($user)->delete(route('expenses.destroy', $feb));
+
+        $this->assertDatabaseMissing('expenses', ['id' => $apr->id]);
+        $this->assertSame(0, Expense::query()->where('user_id', $user->id)->count());
+    }
+
+    public function test_deleting_recurring_linked_income_removes_rule_and_all_materialized_rows(): void
+    {
+        $user = User::factory()->create();
+        $rule = $user->recurringIncomes()->create([
+            'name' => 'Pay',
+            'amount' => 500,
+            'day_of_month' => 25,
+            'starts_on' => '2026-01-25',
+            'ends_on' => null,
+        ]);
+        $feb = $user->incomes()->create([
+            'recurring_income_id' => $rule->id,
+            'name' => 'Pay',
+            'amount' => 500,
+            'date' => '2026-02-25',
+        ]);
+        $mar = $user->incomes()->create([
+            'recurring_income_id' => $rule->id,
+            'name' => 'Pay',
+            'amount' => 500,
+            'date' => '2026-03-25',
+        ]);
+
+        $this->actingAs($user)->delete(route('income.destroy', $feb));
+
+        $this->assertDatabaseMissing('recurring_incomes', ['id' => $rule->id]);
+        $this->assertDatabaseMissing('incomes', ['id' => $feb->id]);
+        $this->assertDatabaseMissing('incomes', ['id' => $mar->id]);
     }
 
     public function test_user_can_update_recurring_expense_from_records_edit_and_syncs_linked_rows(): void

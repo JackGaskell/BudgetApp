@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
+use App\Models\RecurringExpense;
 use App\Services\RecurringMaterializer;
 use App\Services\RecurringRuleSync;
 use Carbon\Carbon;
@@ -10,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ExpenseController extends Controller
@@ -83,7 +85,10 @@ class ExpenseController extends Controller
         if ($hadRecurring && ! $wantsRecurring) {
             $rule = $expense->recurringExpense;
             if ($rule && $rule->user_id === $request->user()->id) {
-                $rule->delete();
+                DB::transaction(function () use ($rule, $expense): void {
+                    $rule->expenses()->whereKeyNot($expense->id)->delete();
+                    $rule->delete();
+                });
             }
             $expense->refresh();
         }
@@ -125,9 +130,51 @@ class ExpenseController extends Controller
     {
         $this->authorizeExpense($request, $expense);
 
-        $expense->delete();
+        DB::transaction(function () use ($request, $expense): void {
+            $userId = $request->user()->id;
+            $rule = $expense->recurringExpense;
+            if ($rule !== null && $rule->user_id === $userId) {
+                $canonicalName = trim($rule->name);
+                $billingDay = (int) $rule->day_of_month;
+            } else {
+                $canonicalName = trim($expense->name);
+                $billingDay = (int) Carbon::parse($expense->date)->day;
+            }
+
+            // Drop rules first so materializeMonth cannot recreate rows on the next page load.
+            $this->purgeRecurringExpenseRulesForUserByNameAndDay($userId, $canonicalName, $billingDay);
+
+            Expense::query()->whereKey($expense->id)->where('user_id', $userId)->delete();
+
+            // Duplicates / legacy rows (often null recurring_expense_id), including amount/category drift.
+            $this->deleteOrphanExpensesByNameAndDay($userId, $canonicalName, $billingDay);
+        });
 
         return redirect()->back()->with('status', __('Expense deleted successfully.'));
+    }
+
+    private function purgeRecurringExpenseRulesForUserByNameAndDay(int $userId, string $canonicalName, int $billingDay): void
+    {
+        $rules = RecurringExpense::query()
+            ->where('user_id', $userId)
+            ->where('day_of_month', $billingDay)
+            ->whereRaw('LOWER(TRIM(name)) = LOWER(?)', [$canonicalName])
+            ->get();
+
+        foreach ($rules as $rule) {
+            $rule->expenses()->delete();
+            $rule->delete();
+        }
+    }
+
+    private function deleteOrphanExpensesByNameAndDay(int $userId, string $canonicalName, int $billingDay): void
+    {
+        Expense::query()
+            ->where('user_id', $userId)
+            ->whereNull('recurring_expense_id')
+            ->whereDay('date', $billingDay)
+            ->whereRaw('LOWER(TRIM(name)) = LOWER(?)', [$canonicalName])
+            ->delete();
     }
 
     /**

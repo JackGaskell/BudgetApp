@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Income;
+use App\Models\RecurringIncome;
 use App\Services\RecurringMaterializer;
 use App\Services\RecurringRuleSync;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class IncomeController extends Controller
@@ -79,7 +81,10 @@ class IncomeController extends Controller
         if ($hadRecurring && ! $wantsRecurring) {
             $rule = $income->recurringIncome;
             if ($rule && $rule->user_id === $request->user()->id) {
-                $rule->delete();
+                DB::transaction(function () use ($rule, $income): void {
+                    $rule->incomes()->whereKeyNot($income->id)->delete();
+                    $rule->delete();
+                });
             }
             $income->refresh();
         }
@@ -127,9 +132,49 @@ class IncomeController extends Controller
     {
         $this->authorizeIncome($request, $income);
 
-        $income->delete();
+        DB::transaction(function () use ($request, $income): void {
+            $userId = $request->user()->id;
+            $rule = $income->recurringIncome;
+            if ($rule !== null && $rule->user_id === $userId) {
+                $canonicalName = trim($rule->name);
+                $billingDay = (int) $rule->day_of_month;
+            } else {
+                $canonicalName = trim($income->name);
+                $billingDay = (int) Carbon::parse($income->date)->day;
+            }
+
+            $this->purgeRecurringIncomeRulesForUserByNameAndDay($userId, $canonicalName, $billingDay);
+
+            Income::query()->whereKey($income->id)->where('user_id', $userId)->delete();
+
+            $this->deleteOrphanIncomesByNameAndDay($userId, $canonicalName, $billingDay);
+        });
 
         return redirect()->back()->with('status', __('Income deleted successfully.'));
+    }
+
+    private function purgeRecurringIncomeRulesForUserByNameAndDay(int $userId, string $canonicalName, int $billingDay): void
+    {
+        $rules = RecurringIncome::query()
+            ->where('user_id', $userId)
+            ->where('day_of_month', $billingDay)
+            ->whereRaw('LOWER(TRIM(name)) = LOWER(?)', [$canonicalName])
+            ->get();
+
+        foreach ($rules as $rule) {
+            $rule->incomes()->delete();
+            $rule->delete();
+        }
+    }
+
+    private function deleteOrphanIncomesByNameAndDay(int $userId, string $canonicalName, int $billingDay): void
+    {
+        Income::query()
+            ->where('user_id', $userId)
+            ->whereNull('recurring_income_id')
+            ->whereDay('date', $billingDay)
+            ->whereRaw('LOWER(TRIM(name)) = LOWER(?)', [$canonicalName])
+            ->delete();
     }
 
     private function authorizeIncome(Request $request, Income $income): void
