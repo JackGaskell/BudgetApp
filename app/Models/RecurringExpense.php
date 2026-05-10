@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RecurringExpense extends Model
 {
+    public const FREQUENCY_MONTHLY = 'monthly';
+
+    public const FREQUENCY_WEEKLY = 'weekly';
+
     /** @use HasFactory<RecurringExpenseFactory> */
     use HasFactory;
 
@@ -17,7 +21,9 @@ class RecurringExpense extends Model
         'name',
         'amount',
         'category',
+        'frequency',
         'day_of_month',
+        'day_of_week',
         'starts_on',
         'ends_on',
     ];
@@ -39,5 +45,15 @@ class RecurringExpense extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function isWeekly(): bool
+    {
+        return $this->frequency === self::FREQUENCY_WEEKLY;
+    }
+
+    public function isMonthly(): bool
+    {
+        return $this->frequency === self::FREQUENCY_MONTHLY;
     }
 }

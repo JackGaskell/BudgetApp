@@ -106,9 +106,23 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    <div class="flex items-start gap-3">
-                        <input id="modal_add_expense_recurring" name="recurring" type="checkbox" value="1" @checked(old('recurring')) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                        <label for="modal_add_expense_recurring" class="text-sm text-gray-700">{{ __('Repeat monthly') }}</label>
+                    @php
+                        $modalExpenseFrequency = old('recurring_frequency', 'monthly');
+                    @endphp
+                    <div class="space-y-2" x-data="{ recurring: @json((bool) old('recurring', false)) }">
+                        <div class="flex items-start gap-3">
+                            <input id="modal_add_expense_recurring" name="recurring" type="checkbox" value="1" x-model.boolean="recurring" class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
+                            <div class="min-w-0 flex-1">
+                                <label for="modal_add_expense_recurring" class="text-sm font-medium text-gray-700">{{ __('Repeat') }}</label>
+                                <div class="mt-2" x-show="recurring" x-cloak>
+                                    <label for="modal_add_expense_recurring_frequency" class="mb-1 block text-xs text-gray-500">{{ __('How often') }}</label>
+                                    <select id="modal_add_expense_recurring_frequency" name="recurring_frequency" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm" x-bind:disabled="!recurring">
+                                        <option value="monthly" @selected($modalExpenseFrequency === 'monthly')>{{ __('Every month (same calendar day)') }}</option>
+                                        <option value="weekly" @selected($modalExpenseFrequency === 'weekly')>{{ __('Every week (same weekday)') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex flex-col-reverse gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
                         <button type="button" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 sm:w-auto" @click="closeAdd()">{{ __('Cancel') }}</button>
@@ -144,9 +158,23 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    <div class="flex items-start gap-3">
-                        <input id="modal_add_income_recurring" name="income_recurring" type="checkbox" value="1" @checked(old('income_recurring')) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                        <label for="modal_add_income_recurring" class="text-sm text-gray-700">{{ __('Repeat monthly') }}</label>
+                    @php
+                        $modalIncomeFrequency = old('income_recurring_frequency', 'monthly');
+                    @endphp
+                    <div class="space-y-2" x-data="{ incomeRecurring: @json((bool) old('income_recurring', false)) }">
+                        <div class="flex items-start gap-3">
+                            <input id="modal_add_income_recurring" name="income_recurring" type="checkbox" value="1" x-model.boolean="incomeRecurring" class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
+                            <div class="min-w-0 flex-1">
+                                <label for="modal_add_income_recurring" class="text-sm font-medium text-gray-700">{{ __('Repeat') }}</label>
+                                <div class="mt-2" x-show="incomeRecurring" x-cloak>
+                                    <label for="modal_add_income_recurring_frequency" class="mb-1 block text-xs text-gray-500">{{ __('How often') }}</label>
+                                    <select id="modal_add_income_recurring_frequency" name="income_recurring_frequency" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm" x-bind:disabled="!incomeRecurring">
+                                        <option value="monthly" @selected($modalIncomeFrequency === 'monthly')>{{ __('Every month (same calendar day)') }}</option>
+                                        <option value="weekly" @selected($modalIncomeFrequency === 'weekly')>{{ __('Every week (same weekday)') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex flex-col-reverse gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
                         <button type="button" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 sm:w-auto" @click="closeAdd()">{{ __('Cancel') }}</button>

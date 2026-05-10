@@ -41,6 +41,7 @@ class RecurringManagementTest extends TestCase
             'category' => 'Entertainment & Subscriptions',
             'date' => '2026-06-12',
             'recurring' => '1',
+            'recurring_frequency' => 'monthly',
         ]);
 
         $response->assertRedirect(route('dashboard'));
@@ -66,6 +67,7 @@ class RecurringManagementTest extends TestCase
             'income_amount' => '250.00',
             'income_date' => '2026-07-20',
             'income_recurring' => '1',
+            'income_recurring_frequency' => 'monthly',
         ]);
 
         $response->assertRedirect(route('dashboard'));
@@ -228,6 +230,7 @@ class RecurringManagementTest extends TestCase
             'category' => 'Not a real category',
             'date' => now()->toDateString(),
             'recurring' => '1',
+            'recurring_frequency' => 'monthly',
         ]);
 
         $response->assertSessionHasErrors('category');
@@ -381,6 +384,7 @@ class RecurringManagementTest extends TestCase
             'category' => 'Housing & Utilities',
             'date' => '2026-02-03',
             'recurring' => '1',
+            'recurring_frequency' => 'monthly',
         ]);
 
         $response->assertRedirect(route('records.index'));

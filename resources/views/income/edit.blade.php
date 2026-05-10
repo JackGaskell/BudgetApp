@@ -41,9 +41,23 @@
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-                <div class="flex items-start gap-3 border-t border-gray-100 pt-4">
-                    <input id="income_recurring_edit" name="income_recurring" type="checkbox" value="1" @checked(old('income_recurring', (bool) $income->recurring_income_id)) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                    <label for="income_recurring_edit" class="text-sm text-gray-700">{{ __('Repeat monthly') }}</label>
+                @php
+                    $defaultIncomeRecurringFrequency = old('income_recurring_frequency', $income->recurringIncome?->frequency ?? 'monthly');
+                @endphp
+                <div class="space-y-3 border-t border-gray-100 pt-4" x-data="{ incomeRecurring: @json((bool) old('income_recurring', $income->recurring_income_id)) }">
+                    <div class="flex items-start gap-3">
+                        <input id="income_recurring_edit" name="income_recurring" type="checkbox" value="1" x-model.boolean="incomeRecurring" class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
+                        <div class="min-w-0 flex-1">
+                            <label for="income_recurring_edit" class="text-sm font-medium text-gray-700">{{ __('Repeat') }}</label>
+                            <div class="mt-2" x-show="incomeRecurring" x-cloak>
+                                <label for="income_recurring_frequency" class="mb-1 block text-xs text-gray-500">{{ __('How often') }}</label>
+                                <select id="income_recurring_frequency" name="income_recurring_frequency" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm" x-bind:disabled="!incomeRecurring">
+                                    <option value="monthly" @selected($defaultIncomeRecurringFrequency === 'monthly')>{{ __('Every month (same calendar day)') }}</option>
+                                    <option value="weekly" @selected($defaultIncomeRecurringFrequency === 'weekly')>{{ __('Every week (same weekday)') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex flex-wrap gap-3 pt-2">
                     <button type="submit" class="rounded-lg border border-gray-900 bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">{{ __('Save changes') }}</button>

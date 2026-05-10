@@ -6,6 +6,7 @@ use App\Models\Expense;
 use App\Models\Income;
 use App\Models\RecurringExpense;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,6 +37,33 @@ class RecurringMaterializationTest extends TestCase
             Expense::query()->where('user_id', $user->id)->where('name', 'Rent')->count()
         );
         $this->assertStringContainsString('Rent', $response->getContent());
+    }
+
+    public function test_weekly_recurring_expense_materializes_each_matching_weekday_in_month(): void
+    {
+        $this->travelTo('2026-05-15 12:00:00');
+
+        $user = User::factory()->create();
+        $start = Carbon::parse('2026-05-09');
+        RecurringExpense::factory()->for($user)->create([
+            'name' => 'Gym',
+            'amount' => 5,
+            'category' => 'Miscellaneous',
+            'frequency' => RecurringExpense::FREQUENCY_WEEKLY,
+            'day_of_month' => $start->day,
+            'day_of_week' => $start->dayOfWeek,
+            'starts_on' => $start->toDateString(),
+            'ends_on' => null,
+        ]);
+
+        $this->actingAs($user)->get(route('dashboard', ['year' => 2026, 'month' => 5]))->assertOk();
+
+        $this->assertSame(4, Expense::query()->where('user_id', $user->id)->where('name', 'Gym')->count());
+        $this->assertDatabaseHas('expenses', [
+            'user_id' => $user->id,
+            'date' => '2026-05-30',
+            'name' => 'Gym',
+        ]);
     }
 
     public function test_materializing_twice_does_not_duplicate_expenses(): void
