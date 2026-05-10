@@ -178,42 +178,96 @@
                                 <th scope="col" class="px-2 py-3 text-right font-semibold">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
+                            @forelse ($recent_expense_rows as $row)
+                                @if ($row['kind'] === 'single')
+                                    @php($expense = $row['expense'])
                         <tbody class="divide-y divide-gray-100">
-                            @forelse ($recent_expenses as $expense)
-                                <tr>
-                                    <td class="px-2 py-3 text-gray-800">{{ $expense->name }}</td>
-                                    <td class="px-2 py-3 text-center align-top">
-                                        @if ($expense->recurring_expense_id)
+                                    <tr>
+                                        <td class="px-2 py-3 text-gray-800">{{ $expense->name }}</td>
+                                        <td class="px-2 py-3 text-center align-top">
+                                            @if ($expense->recurring_expense_id)
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem]" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
+                                            @else
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium tabular-nums text-gray-700 sm:min-w-[2.5rem]">{{ __('No') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-2 py-3 text-gray-700">{{ $expense->category }}</td>
+                                        <td class="px-2 py-3 text-gray-700">{{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}</td>
+                                        <td class="px-2 py-3 text-right font-semibold text-gray-900">@money($expense->amount)</td>
+                                        <td class="whitespace-nowrap px-2 py-3 text-right align-top">
+                                            <div class="inline-flex items-center justify-end gap-0.5">
+                                                <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
+                                                    {!! $dashEditIcon !!}
+                                                    <span class="sr-only">{{ __('Edit') }}</span>
+                                                </a>
+                                                <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('dashboard-delete-expense-{{ $expense->id }}').showModal()">
+                                                    {!! $dashDeleteIcon !!}
+                                                    <span class="sr-only">{{ __('Delete') }}</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                        </tbody>
+                                @else
+                                    @php($items = $row['items'])
+                                    @php($groupTotal = $items->sum(fn ($e) => (float) $e->amount))
+                        <tbody class="divide-y divide-gray-100" x-data="{ open: false }">
+                                    <tr class="align-top bg-white">
+                                        <td class="px-2 py-3 text-gray-800">
+                                            <div class="flex items-start gap-1.5">
+                                                <button type="button" class="mt-0.5 shrink-0 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900" @click.prevent="open = !open" :aria-expanded="open.toString()" title="{{ __('Show payment dates') }}">
+                                                    <svg class="h-4 w-4 transition-transform duration-150" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                                                </button>
+                                                <div class="min-w-0">
+                                                    <span class="font-medium">{{ $items->first()->name }}</span>
+                                                    @php($payCount = $items->count())
+                                                    <p class="mt-0.5 text-xs text-gray-500">{{ $payCount }} {{ $payCount === 1 ? __('payment') : __('payments') }} · {{ __('this month') }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-2 py-3 text-center">
                                             <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem]" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
-                                        @else
-                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium tabular-nums text-gray-700 sm:min-w-[2.5rem]">{{ __('No') }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-2 py-3 text-gray-700">{{ $expense->category }}</td>
-                                    <td class="px-2 py-3 text-gray-700">{{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}</td>
-                                    <td class="px-2 py-3 text-right font-semibold text-gray-900">@money($expense->amount)</td>
-                                    <td class="whitespace-nowrap px-2 py-3 text-right align-top">
-                                        <div class="inline-flex items-center justify-end gap-0.5">
-                                            <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
-                                                {!! $dashEditIcon !!}
-                                                <span class="sr-only">{{ __('Edit') }}</span>
-                                            </a>
-                                            <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('dashboard-delete-expense-{{ $expense->id }}').showModal()">
-                                                {!! $dashDeleteIcon !!}
-                                                <span class="sr-only">{{ __('Delete') }}</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                        <td class="px-2 py-3 text-gray-700">{{ $items->first()->category }}</td>
+                                        <td class="px-2 py-3 text-gray-700">{{ \Illuminate\Support\Carbon::parse($items->min('date'))->format('j M') }} – {{ \Illuminate\Support\Carbon::parse($items->max('date'))->format('j M') }}</td>
+                                        <td class="px-2 py-3 text-right font-semibold text-gray-900">@money($groupTotal)</td>
+                                        <td class="whitespace-nowrap px-2 py-3 text-right text-xs text-gray-500">{{ __('Expand for actions') }}</td>
+                                    </tr>
+                                    @foreach ($items as $expense)
+                                        <tr x-show="open" x-cloak class="bg-gray-50/90 text-sm">
+                                            <td class="px-2 py-2 pl-8 text-gray-600">{{ $expense->name }}</td>
+                                            <td class="px-2 py-2 text-center align-top">
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem]" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
+                                            </td>
+                                            <td class="px-2 py-2 text-gray-700">{{ $expense->category }}</td>
+                                            <td class="px-2 py-2 text-gray-700">{{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}</td>
+                                            <td class="px-2 py-2 text-right font-semibold text-gray-900">@money($expense->amount)</td>
+                                            <td class="whitespace-nowrap px-2 py-2 text-right align-top">
+                                                <div class="inline-flex items-center justify-end gap-0.5">
+                                                    <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
+                                                        {!! $dashEditIcon !!}
+                                                        <span class="sr-only">{{ __('Edit') }}</span>
+                                                    </a>
+                                                    <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('dashboard-delete-expense-{{ $expense->id }}').showModal()">
+                                                        {!! $dashDeleteIcon !!}
+                                                        <span class="sr-only">{{ __('Delete') }}</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                        </tbody>
+                                @endif
                             @empty
+                        <tbody class="divide-y divide-gray-100">
                                 <tr>
                                     <td colspan="6" class="px-2 py-4 text-sm text-gray-500">{{ __('No expenses yet. Use Add transaction in the toolbar or press N.') }}</td>
                                 </tr>
-                            @endforelse
                         </tbody>
+                            @endforelse
                     </table>
                 </div>
-                @foreach ($recent_expenses as $expense)
+                @foreach ($recent_expenses_for_dialogs as $expense)
                     <dialog id="dashboard-delete-expense-{{ $expense->id }}" class="w-[calc(100vw-2rem)] max-w-md rounded-xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-black/40">
                         <form method="POST" action="{{ route('expenses.destroy', $expense) }}" class="p-6">
                             @csrf

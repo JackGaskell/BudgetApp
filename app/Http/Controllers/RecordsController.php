@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\RecurringMaterializer;
+use App\Support\GroupedTransactionRows;
 use App\Support\ViewMonth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -43,7 +44,9 @@ class RecordsController extends Controller
             'next_period_params' => ViewMonth::queryParams($nextMonth->year, $nextMonth->month),
             'split_date' => $splitDate,
             'expenses' => $expenses,
+            'expense_rows' => GroupedTransactionRows::forExpenses($expenses),
             'incomes' => $incomes,
+            'income_rows' => GroupedTransactionRows::forIncomes($incomes),
         ]);
     }
 }

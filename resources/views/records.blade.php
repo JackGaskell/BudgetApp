@@ -22,7 +22,7 @@
         <section class="rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
             <h2 class="mb-3 text-lg font-bold text-gray-900 sm:mb-4">{{ __('Expenses') }}</h2>
 
-            @if ($expenses->isEmpty())
+            @if ($expense_rows->isEmpty())
                 <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50/50 px-4 py-6 text-sm text-gray-500">
                     <p class="font-medium text-gray-800">{{ __('No expenses yet') }}</p>
                     <p class="mt-1">{{ __('Add an expense from the dashboard to see it here.') }}</p>
@@ -41,50 +41,129 @@
                                 <th scope="col" class="sticky right-0 z-20 whitespace-nowrap border-b border-gray-200 bg-white py-2 pl-3 pr-0 text-right font-semibold shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.08)] sm:py-3 sm:pl-4">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
+                            @foreach ($expense_rows as $row)
+                                @if ($row['kind'] === 'single')
+                                    @php($expense = $row['expense'])
                         <tbody class="divide-y divide-gray-100">
-                            @foreach ($expenses as $expense)
-                                <tr class="group">
-                                    <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
-                                        <span class="line-clamp-2 font-medium text-gray-900">{{ $expense->name }}</span>
-                                    </td>
-                                    <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-3">
-                                        @if ($expense->recurring_expense_id)
-                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
-                                        @else
-                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-gray-700 sm:min-w-[2.5rem] sm:text-xs">{{ __('No') }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="hidden max-w-[8rem] truncate py-2 px-2 align-top text-gray-700 sm:table-cell sm:max-w-[10rem] sm:py-3" title="{{ $expense->category }}">{{ $expense->category }}</td>
-                                    <td class="whitespace-nowrap px-2 py-2 align-top sm:py-3">
-                                        @if ($expense->date <= $split_date)
-                                            <span class="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Paid') }}</span>
-                                        @else
-                                            <span class="inline-flex whitespace-nowrap rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Upcoming') }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-3">
-                                        {{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">@money($expense->amount)</td>
-                                    <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-50 sm:py-3 sm:pl-4">
-                                        <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
-                                            <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
-                                                {!! $editExpenseIcon !!}
-                                                <span class="sr-only">{{ __('Edit') }}</span>
-                                            </a>
-                                            <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('delete-expense-{{ $expense->id }}').showModal()">
-                                                {!! $deleteIcon !!}
-                                                <span class="sr-only">{{ __('Delete') }}</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
+                                    <tr class="group">
+                                        <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
+                                            <span class="line-clamp-2 font-medium text-gray-900">{{ $expense->name }}</span>
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-3">
+                                            @if ($expense->recurring_expense_id)
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
+                                            @else
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-gray-700 sm:min-w-[2.5rem] sm:text-xs">{{ __('No') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="hidden max-w-[8rem] truncate py-2 px-2 align-top text-gray-700 sm:table-cell sm:max-w-[10rem] sm:py-3" title="{{ $expense->category }}">{{ $expense->category }}</td>
+                                        <td class="whitespace-nowrap px-2 py-2 align-top sm:py-3">
+                                            @if ($expense->date <= $split_date)
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Paid') }}</span>
+                                            @else
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Upcoming') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-3">
+                                            {{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">@money($expense->amount)</td>
+                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-50 sm:py-3 sm:pl-4">
+                                            <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
+                                                <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
+                                                    {!! $editExpenseIcon !!}
+                                                    <span class="sr-only">{{ __('Edit') }}</span>
+                                                </a>
+                                                <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('delete-expense-{{ $expense->id }}').showModal()">
+                                                    {!! $deleteIcon !!}
+                                                    <span class="sr-only">{{ __('Delete') }}</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                         </tbody>
+                                @else
+                                    @php($items = $row['items'])
+                                    @php($groupTotal = $items->sum(fn ($e) => (float) $e->amount))
+                                    @php($paidInGroup = $items->filter(fn ($e) => $e->date <= $split_date)->count())
+                        <tbody class="divide-y divide-gray-100" x-data="{ open: false }">
+                                    <tr class="group bg-white">
+                                        <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
+                                            <div class="flex items-start gap-1.5">
+                                                <button type="button" class="mt-0.5 shrink-0 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900" @click.prevent="open = !open" :aria-expanded="open.toString()" title="{{ __('Show payment dates') }}">
+                                                    <svg class="h-4 w-4 transition-transform duration-150" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                                                </button>
+                                                <div class="min-w-0">
+                                                    <span class="line-clamp-2 font-medium text-gray-900">{{ $items->first()->name }}</span>
+                                                    @php($paymentCount = $items->count())
+                                                    <p class="mt-0.5 text-[10px] text-gray-500 sm:text-xs">{{ $paymentCount }} {{ $paymentCount === 1 ? __('payment') : __('payments') }} · {{ __('this month') }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-3">
+                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
+                                        </td>
+                                        <td class="hidden max-w-[8rem] truncate py-2 px-2 align-top text-gray-700 sm:table-cell sm:max-w-[10rem] sm:py-3" title="{{ $items->first()->category }}">{{ $items->first()->category }}</td>
+                                        <td class="whitespace-nowrap px-2 py-2 align-top sm:py-3">
+                                            @if ($paidInGroup === 0)
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Upcoming') }}</span>
+                                            @elseif ($paidInGroup === $items->count())
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Paid') }}</span>
+                                            @else
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Mixed') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-3">
+                                            {{ \Illuminate\Support\Carbon::parse($items->min('date'))->format('j M') }} – {{ \Illuminate\Support\Carbon::parse($items->max('date'))->format('j M Y') }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">
+                                            @money($groupTotal)
+                                        </td>
+                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top text-xs text-gray-500 shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] sm:py-3 sm:pl-4">
+                                            <span class="hidden sm:inline">{{ __('Expand rows') }}</span>
+                                        </td>
+                                    </tr>
+                                    @foreach ($items as $expense)
+                                        <tr x-show="open" x-cloak class="group bg-gray-50/90 text-xs sm:text-sm">
+                                            <td class="max-w-[10rem] py-2 pr-2 pl-7 align-top sm:max-w-[12rem] sm:py-2.5 sm:pr-3 sm:pl-8">
+                                                <span class="text-gray-600">{{ $expense->name }}</span>
+                                            </td>
+                                            <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-2.5">
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
+                                            </td>
+                                            <td class="hidden max-w-[8rem] truncate py-2 px-2 align-top text-gray-600 sm:table-cell sm:max-w-[10rem] sm:py-2.5" title="{{ $expense->category }}">{{ $expense->category }}</td>
+                                            <td class="whitespace-nowrap px-2 py-2 align-top sm:py-2.5">
+                                                @if ($expense->date <= $split_date)
+                                                    <span class="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Paid') }}</span>
+                                                @else
+                                                    <span class="inline-flex whitespace-nowrap rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Upcoming') }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-2.5">
+                                                {{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}
+                                            </td>
+                                            <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-2.5">@money($expense->amount)</td>
+                                            <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50/90 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-100/90 sm:py-2.5 sm:pl-4">
+                                                <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
+                                                    <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
+                                                        {!! $editExpenseIcon !!}
+                                                        <span class="sr-only">{{ __('Edit') }}</span>
+                                                    </a>
+                                                    <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('delete-expense-{{ $expense->id }}').showModal()">
+                                                        {!! $deleteIcon !!}
+                                                        <span class="sr-only">{{ __('Delete') }}</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                        </tbody>
+                                @endif
+                            @endforeach
                     </table>
                 </div>
 
-                @foreach ($expenses as $expense)
+                @foreach (\App\Support\GroupedTransactionRows::flattenExpenseRows($expense_rows) as $expense)
                     <dialog id="delete-expense-{{ $expense->id }}" class="w-[calc(100vw-2rem)] max-w-md rounded-xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-black/40">
                         <form method="POST" action="{{ route('expenses.destroy', $expense) }}" class="p-6">
                             @csrf
@@ -104,7 +183,7 @@
         <section class="rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
             <h2 class="mb-3 text-lg font-bold text-gray-900 sm:mb-4">{{ __('Income') }}</h2>
 
-            @if ($incomes->isEmpty())
+            @if ($income_rows->isEmpty())
                 <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50/50 px-4 py-6 text-sm text-gray-500">
                     <p class="font-medium text-gray-800">{{ __('No income yet') }}</p>
                     <p class="mt-1">{{ __('Add income from the dashboard to see it here.') }}</p>
@@ -122,49 +201,126 @@
                                 <th scope="col" class="sticky right-0 z-20 whitespace-nowrap border-b border-gray-200 bg-white py-2 pl-3 pr-0 text-right font-semibold shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.08)] sm:py-3 sm:pl-4">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
+                            @foreach ($income_rows as $row)
+                                @if ($row['kind'] === 'single')
+                                    @php($income = $row['income'])
                         <tbody class="divide-y divide-gray-100">
-                            @foreach ($incomes as $income)
-                                <tr class="group">
-                                    <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
-                                        <span class="line-clamp-2 font-medium text-gray-900">{{ $income->name }}</span>
-                                    </td>
-                                    <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-3">
-                                        @if ($income->recurring_income_id)
-                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
-                                        @else
-                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-gray-700 sm:min-w-[2.5rem] sm:text-xs">{{ __('No') }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="whitespace-nowrap px-2 py-2 align-top sm:py-3">
-                                        @if ($income->date <= $split_date)
-                                            <span class="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Received') }}</span>
-                                        @else
-                                            <span class="inline-flex whitespace-nowrap rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Scheduled') }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-3">
-                                        {{ \Illuminate\Support\Carbon::parse($income->date)->format('j M Y') }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">@money($income->amount)</td>
-                                    <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-50 sm:py-3 sm:pl-4">
-                                        <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
-                                            <a href="{{ route('income.edit', array_merge(['income' => $income], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
-                                                {!! $editExpenseIcon !!}
-                                                <span class="sr-only">{{ __('Edit') }}</span>
-                                            </a>
-                                            <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('delete-income-{{ $income->id }}').showModal()">
-                                                {!! $deleteIcon !!}
-                                                <span class="sr-only">{{ __('Delete') }}</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
+                                    <tr class="group">
+                                        <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
+                                            <span class="line-clamp-2 font-medium text-gray-900">{{ $income->name }}</span>
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-3">
+                                            @if ($income->recurring_income_id)
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
+                                            @else
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-gray-700 sm:min-w-[2.5rem] sm:text-xs">{{ __('No') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 align-top sm:py-3">
+                                            @if ($income->date <= $split_date)
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Received') }}</span>
+                                            @else
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Scheduled') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-3">
+                                            {{ \Illuminate\Support\Carbon::parse($income->date)->format('j M Y') }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">@money($income->amount)</td>
+                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-50 sm:py-3 sm:pl-4">
+                                            <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
+                                                <a href="{{ route('income.edit', array_merge(['income' => $income], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
+                                                    {!! $editExpenseIcon !!}
+                                                    <span class="sr-only">{{ __('Edit') }}</span>
+                                                </a>
+                                                <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('delete-income-{{ $income->id }}').showModal()">
+                                                    {!! $deleteIcon !!}
+                                                    <span class="sr-only">{{ __('Delete') }}</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                         </tbody>
+                                @else
+                                    @php($items = $row['items'])
+                                    @php($groupTotal = $items->sum(fn ($i) => (float) $i->amount))
+                                    @php($receivedInGroup = $items->filter(fn ($i) => $i->date <= $split_date)->count())
+                        <tbody class="divide-y divide-gray-100" x-data="{ open: false }">
+                                    <tr class="group bg-white">
+                                        <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
+                                            <div class="flex items-start gap-1.5">
+                                                <button type="button" class="mt-0.5 shrink-0 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900" @click.prevent="open = !open" :aria-expanded="open.toString()" title="{{ __('Show dates') }}">
+                                                    <svg class="h-4 w-4 transition-transform duration-150" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                                                </button>
+                                                <div class="min-w-0">
+                                                    <span class="line-clamp-2 font-medium text-gray-900">{{ $items->first()->name }}</span>
+                                                    @php($incomeCount = $items->count())
+                                                    <p class="mt-0.5 text-[10px] text-gray-500 sm:text-xs">{{ $incomeCount }} {{ $incomeCount === 1 ? __('payment') : __('payments') }} · {{ __('this month') }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-3">
+                                            <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 align-top sm:py-3">
+                                            @if ($receivedInGroup === 0)
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Scheduled') }}</span>
+                                            @elseif ($receivedInGroup === $items->count())
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Received') }}</span>
+                                            @else
+                                                <span class="inline-flex whitespace-nowrap rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Mixed') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-3">
+                                            {{ \Illuminate\Support\Carbon::parse($items->min('date'))->format('j M') }} – {{ \Illuminate\Support\Carbon::parse($items->max('date'))->format('j M Y') }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">
+                                            @money($groupTotal)
+                                        </td>
+                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top text-xs text-gray-500 shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] sm:py-3 sm:pl-4">
+                                            <span class="hidden sm:inline">{{ __('Expand rows') }}</span>
+                                        </td>
+                                    </tr>
+                                    @foreach ($items as $income)
+                                        <tr x-show="open" x-cloak class="group bg-gray-50/90 text-xs sm:text-sm">
+                                            <td class="max-w-[10rem] py-2 pr-2 pl-7 align-top sm:max-w-[12rem] sm:py-2.5 sm:pr-3 sm:pl-8">
+                                                <span class="text-gray-600">{{ $income->name }}</span>
+                                            </td>
+                                            <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-2.5">
+                                                <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
+                                            </td>
+                                            <td class="whitespace-nowrap px-2 py-2 align-top sm:py-2.5">
+                                                @if ($income->date <= $split_date)
+                                                    <span class="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Received') }}</span>
+                                                @else
+                                                    <span class="inline-flex whitespace-nowrap rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Scheduled') }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-2.5">
+                                                {{ \Illuminate\Support\Carbon::parse($income->date)->format('j M Y') }}
+                                            </td>
+                                            <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-2.5">@money($income->amount)</td>
+                                            <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50/90 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-100/90 sm:py-2.5 sm:pl-4">
+                                                <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
+                                                    <a href="{{ route('income.edit', array_merge(['income' => $income], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
+                                                        {!! $editExpenseIcon !!}
+                                                        <span class="sr-only">{{ __('Edit') }}</span>
+                                                    </a>
+                                                    <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1" title="{{ __('Delete') }}" onclick="document.getElementById('delete-income-{{ $income->id }}').showModal()">
+                                                        {!! $deleteIcon !!}
+                                                        <span class="sr-only">{{ __('Delete') }}</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                        </tbody>
+                                @endif
+                            @endforeach
                     </table>
                 </div>
 
-                @foreach ($incomes as $income)
+                @foreach (\App\Support\GroupedTransactionRows::flattenIncomeRows($income_rows) as $income)
                     <dialog id="delete-income-{{ $income->id }}" class="w-[calc(100vw-2rem)] max-w-md rounded-xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-black/40">
                         <form method="POST" action="{{ route('income.destroy', $income) }}" class="p-6">
                             @csrf
