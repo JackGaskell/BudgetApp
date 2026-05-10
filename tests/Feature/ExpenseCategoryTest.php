@@ -20,6 +20,7 @@ class ExpenseCategoryTest extends TestCase
             ->get('/dashboard');
 
         $response->assertOk();
+        $response->assertSeeText('Repeat monthly');
         $response->assertSeeText('Select a category');
 
         foreach (Expense::CATEGORIES as $category) {
