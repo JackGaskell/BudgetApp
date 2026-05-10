@@ -56,6 +56,7 @@
                                     <option value="weekly" @selected($defaultIncomeRecurringFrequency === 'weekly')>{{ __('Every week (same weekday)') }}</option>
                                 </select>
                             </div>
+                            <p class="mt-2 text-xs text-gray-500" x-show="incomeRecurring" x-cloak>{{ __('To stop repeating, turn off Repeat above and save. Future weeks or months won’t be added; entries already in your records stay.') }}</p>
                         </div>
                     </div>
                 </div>
