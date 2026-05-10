@@ -44,16 +44,15 @@
                 <p class="mt-2 text-xs text-gray-500">{{ __('What you should have left after scheduled income and expenses.') }}</p>
             </div>
             <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-                <p class="text-xs text-gray-500">{{ __('Days until broke') }}</p>
-                @if (! $days_until_broke_available)
+                <p class="text-xs text-gray-500">{{ __('Spending pace') }}</p>
+                @if (is_null($spending_pace_daily_average))
                     <p class="mt-1 text-2xl font-bold text-gray-900">—</p>
-                    <p class="mt-2 text-xs text-gray-500">{{ __('Shown only when you are viewing the current calendar month.') }}</p>
-                @elseif (is_null($days_until_broke))
-                    <p class="mt-1 text-2xl font-bold text-gray-900">{{ __('Not enough data') }}</p>
-                    <p class="mt-2 text-xs text-gray-500">{{ __('Add expenses to estimate this.') }}</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ __('Shown after the month has started (not for months that have not begun yet).') }}</p>
                 @else
-                    <p class="mt-1 text-2xl font-bold text-gray-900">{{ $days_until_broke }} {{ __('days') }}</p>
-                    <p class="mt-2 text-xs text-gray-500">{{ __('At this pace, your budget lasts about') }} {{ $days_until_broke }} {{ __('more days.') }}</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900">
+                        <span class="whitespace-nowrap">@money($spending_pace_daily_average) <span class="text-lg font-semibold text-gray-600">{{ __('per day') }}</span></span>
+                    </p>
+                    <p class="mt-2 text-xs text-gray-500">{{ __('Average actual spend per day in :month so far.', ['month' => $view_month_label]) }}</p>
                 @endif
             </div>
         </div>

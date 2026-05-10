@@ -68,9 +68,8 @@ class DashboardController extends Controller
             $daysPassedInMonth = 0;
         }
 
-        $averageDailySpend = $daysPassedInMonth > 0 ? $actualExpenses / $daysPassedInMonth : 0;
-        $daysUntilBroke = ($isCurrentMonth && $averageDailySpend > 0)
-            ? (int) floor($currentBalance / $averageDailySpend)
+        $spendingPaceDailyAverage = $daysPassedInMonth > 0
+            ? $actualExpenses / $daysPassedInMonth
             : null;
 
         if ($isCurrentMonth) {
@@ -153,9 +152,8 @@ class DashboardController extends Controller
             'projected_end_of_month_balance' => $projectedEndOfMonthBalance,
             'safe_to_spend' => $safeToSpend,
             'projected_overspend_amount' => $projectedOverspendAmount,
-            'days_until_broke' => $daysUntilBroke,
             'daily_budget_remaining' => $dailyBudgetRemaining,
-            'days_until_broke_available' => $isCurrentMonth,
+            'spending_pace_daily_average' => $spendingPaceDailyAverage,
             'categories_with_totals' => $categoriesWithTotals,
             'recent_expenses' => $recentExpenses,
         ]);
