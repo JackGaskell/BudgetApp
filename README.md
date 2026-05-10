@@ -2,9 +2,7 @@
 
 A small **Laravel** web app for tracking **income and expenses in GBP**, aimed at students (or anyone) who want a clear view of the **current month**: what has already happened, what is still scheduled, and where money goes by category.
 
-I put it together as a **portfolio project** — auth, validation, Blade + Tailwind, plus PHPUnit for the core HTTP flows.
-
-In the repo you will find the usual bits: CRUD, server-side validation, Blade layouts/components, a dashboard that rolls up user data, and PHPUnit coverage for the main HTTP flows including recurring money movements.
+I put it together as a **portfolio project** — auth, validation, Blade + Tailwind, PHPUnit on the main flows (auth, CRUD, recurring), and a dashboard that rolls up the numbers.
 
 ---
 
@@ -29,9 +27,9 @@ All presentation amounts use a small **GBP** formatting helper and the `@money` 
 
 ### Recurring income and expenses
 
-You set **repeat monthly** when adding or editing a row (no separate “recurring centre”). The app keeps a **billing day of month** per schedule and **fills in** the matching transaction when you open **Dashboard** or **Records** for a given month, so future months show the same item without you re-entering it. If something should only run for a while, you can clear repeat on edit — that drops the schedule and **removes the copied rows in other months** so they do not linger.
+You set **repeat monthly** when adding or editing a row. The app keeps a **billing day of month** per schedule and **fills in** the matching transaction when you open **Dashboard** or **Records** for a given month, so future months show the same item without you re-entering it. If something should only run for a while, you can clear repeat on edit — that drops the schedule and **removes the copied rows in other months** so they do not linger.
 
-Deleting a row that was tied to a repeat schedule **cancels the whole schedule** for that label and day (including stray copies that lost their link). That way nothing creeps back in when you change month or reload the page. A bookmark to `/recurring` still works; it simply **redirects to Records** for the current month.
+Deleting a row that was tied to a repeat schedule **cancels the whole schedule** for that label and day (including stray copies that lost their link). That way nothing creeps back in when you change month or reload the page. **`/recurring`** redirects to **Records** (current month).
 
 ---
 
