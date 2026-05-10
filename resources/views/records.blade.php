@@ -87,24 +87,32 @@
                                     @php($groupTotal = $items->sum(fn ($e) => (float) $e->amount))
                                     @php($paidInGroup = $items->filter(fn ($e) => $e->date <= $split_date)->count())
                         <tbody class="divide-y divide-gray-100" x-data="{ open: false }">
-                                    <tr class="group bg-white">
-                                        <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
-                                            <div class="flex items-start gap-1.5">
-                                                <button type="button" class="mt-0.5 shrink-0 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900" @click.prevent="open = !open" :aria-expanded="open.toString()" title="{{ __('Show payment dates') }}">
-                                                    <svg class="h-4 w-4 transition-transform duration-150" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-                                                </button>
-                                                <div class="min-w-0">
+                                    <tr
+                                        class="group cursor-pointer select-none border-l-[3px] border-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-0"
+                                        role="button"
+                                        tabindex="0"
+                                        :aria-expanded="open.toString()"
+                                        @click="open = !open"
+                                        @keydown.enter.prevent="open = !open"
+                                        @keydown.space.prevent="open = !open"
+                                    >
+                                        <td class="max-w-[10rem] bg-gray-50 py-2 pr-2 align-top transition-colors group-hover:bg-gray-100/90 sm:max-w-[12rem] sm:py-3 sm:pr-3">
+                                            <div class="flex items-start gap-2 sm:gap-2.5">
+                                                <span class="pointer-events-none mt-0.5 shrink-0 text-gray-500 transition-colors duration-150 group-hover:text-gray-700">
+                                                    <svg class="h-4 w-4 transition-transform duration-200 ease-out sm:h-5 sm:w-5" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                                                </span>
+                                                <div class="min-w-0 pt-0.5">
                                                     <span class="line-clamp-2 font-medium text-gray-900">{{ $items->first()->name }}</span>
                                                     @php($paymentCount = $items->count())
                                                     <p class="mt-0.5 text-[10px] text-gray-500 sm:text-xs">{{ $paymentCount }} {{ $paymentCount === 1 ? __('payment') : __('payments') }} · {{ __('this month') }}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-3">
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-2 text-center align-top transition-colors group-hover:bg-gray-100/90 sm:py-3">
                                             <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
                                         </td>
-                                        <td class="hidden max-w-[8rem] truncate py-2 px-2 align-top text-gray-700 sm:table-cell sm:max-w-[10rem] sm:py-3" title="{{ $items->first()->category }}">{{ $items->first()->category }}</td>
-                                        <td class="whitespace-nowrap px-2 py-2 align-top sm:py-3">
+                                        <td class="hidden max-w-[8rem] truncate bg-gray-50 py-2 px-2 align-top text-gray-700 transition-colors group-hover:bg-gray-100/90 sm:table-cell sm:max-w-[10rem] sm:py-3" title="{{ $items->first()->category }}">{{ $items->first()->category }}</td>
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-2 align-top transition-colors group-hover:bg-gray-100/90 sm:py-3">
                                             @if ($paidInGroup === 0)
                                                 <span class="inline-flex whitespace-nowrap rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Upcoming') }}</span>
                                             @elseif ($paidInGroup === $items->count())
@@ -113,15 +121,13 @@
                                                 <span class="inline-flex whitespace-nowrap rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Mixed') }}</span>
                                             @endif
                                         </td>
-                                        <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-3">
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-2 align-top text-gray-700 transition-colors group-hover:bg-gray-100/90 sm:py-3">
                                             {{ \Illuminate\Support\Carbon::parse($items->min('date'))->format('j M') }} – {{ \Illuminate\Support\Carbon::parse($items->max('date'))->format('j M Y') }}
                                         </td>
-                                        <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 transition-colors group-hover:bg-gray-100/90 sm:py-3">
                                             @money($groupTotal)
                                         </td>
-                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top text-xs text-gray-500 shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] sm:py-3 sm:pl-4">
-                                            <span class="hidden sm:inline">{{ __('Expand rows') }}</span>
-                                        </td>
+                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] transition-colors group-hover:bg-gray-100/90 sm:py-3 sm:pl-4">&nbsp;</td>
                                     </tr>
                                     @foreach ($items as $expense)
                                         <tr x-show="open" x-cloak class="group bg-gray-50/90 text-xs sm:text-sm">
@@ -246,23 +252,31 @@
                                     @php($groupTotal = $items->sum(fn ($i) => (float) $i->amount))
                                     @php($receivedInGroup = $items->filter(fn ($i) => $i->date <= $split_date)->count())
                         <tbody class="divide-y divide-gray-100" x-data="{ open: false }">
-                                    <tr class="group bg-white">
-                                        <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
-                                            <div class="flex items-start gap-1.5">
-                                                <button type="button" class="mt-0.5 shrink-0 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900" @click.prevent="open = !open" :aria-expanded="open.toString()" title="{{ __('Show dates') }}">
-                                                    <svg class="h-4 w-4 transition-transform duration-150" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-                                                </button>
-                                                <div class="min-w-0">
+                                    <tr
+                                        class="group cursor-pointer select-none border-l-[3px] border-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-0"
+                                        role="button"
+                                        tabindex="0"
+                                        :aria-expanded="open.toString()"
+                                        @click="open = !open"
+                                        @keydown.enter.prevent="open = !open"
+                                        @keydown.space.prevent="open = !open"
+                                    >
+                                        <td class="max-w-[10rem] bg-gray-50 py-2 pr-2 align-top transition-colors group-hover:bg-gray-100/90 sm:max-w-[12rem] sm:py-3 sm:pr-3">
+                                            <div class="flex items-start gap-2 sm:gap-2.5">
+                                                <span class="pointer-events-none mt-0.5 shrink-0 text-gray-500 transition-colors duration-150 group-hover:text-gray-700">
+                                                    <svg class="h-4 w-4 transition-transform duration-200 ease-out sm:h-5 sm:w-5" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                                                </span>
+                                                <div class="min-w-0 pt-0.5">
                                                     <span class="line-clamp-2 font-medium text-gray-900">{{ $items->first()->name }}</span>
                                                     @php($incomeCount = $items->count())
                                                     <p class="mt-0.5 text-[10px] text-gray-500 sm:text-xs">{{ $incomeCount }} {{ $incomeCount === 1 ? __('payment') : __('payments') }} · {{ __('this month') }}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="whitespace-nowrap px-2 py-2 text-center align-top sm:py-3">
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-2 text-center align-top transition-colors group-hover:bg-gray-100/90 sm:py-3">
                                             <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem] sm:text-xs" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
                                         </td>
-                                        <td class="whitespace-nowrap px-2 py-2 align-top sm:py-3">
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-2 align-top transition-colors group-hover:bg-gray-100/90 sm:py-3">
                                             @if ($receivedInGroup === 0)
                                                 <span class="inline-flex whitespace-nowrap rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Scheduled') }}</span>
                                             @elseif ($receivedInGroup === $items->count())
@@ -271,15 +285,13 @@
                                                 <span class="inline-flex whitespace-nowrap rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-800 sm:px-2 sm:py-1 sm:text-xs">{{ __('Mixed') }}</span>
                                             @endif
                                         </td>
-                                        <td class="whitespace-nowrap px-2 py-2 align-top text-gray-700 sm:py-3">
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-2 align-top text-gray-700 transition-colors group-hover:bg-gray-100/90 sm:py-3">
                                             {{ \Illuminate\Support\Carbon::parse($items->min('date'))->format('j M') }} – {{ \Illuminate\Support\Carbon::parse($items->max('date'))->format('j M Y') }}
                                         </td>
-                                        <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 transition-colors group-hover:bg-gray-100/90 sm:py-3">
                                             @money($groupTotal)
                                         </td>
-                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top text-xs text-gray-500 shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] sm:py-3 sm:pl-4">
-                                            <span class="hidden sm:inline">{{ __('Expand rows') }}</span>
-                                        </td>
+                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] transition-colors group-hover:bg-gray-100/90 sm:py-3 sm:pl-4">&nbsp;</td>
                                     </tr>
                                     @foreach ($items as $income)
                                         <tr x-show="open" x-cloak class="group bg-gray-50/90 text-xs sm:text-sm">

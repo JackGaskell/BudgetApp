@@ -212,26 +212,34 @@
                                     @php($items = $row['items'])
                                     @php($groupTotal = $items->sum(fn ($e) => (float) $e->amount))
                         <tbody class="divide-y divide-gray-100" x-data="{ open: false }">
-                                    <tr class="align-top bg-white">
-                                        <td class="px-2 py-3 text-gray-800">
-                                            <div class="flex items-start gap-1.5">
-                                                <button type="button" class="mt-0.5 shrink-0 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900" @click.prevent="open = !open" :aria-expanded="open.toString()" title="{{ __('Show payment dates') }}">
-                                                    <svg class="h-4 w-4 transition-transform duration-150" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-                                                </button>
-                                                <div class="min-w-0">
-                                                    <span class="font-medium">{{ $items->first()->name }}</span>
+                                    <tr
+                                        class="group cursor-pointer select-none align-top border-l-[3px] border-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-0"
+                                        role="button"
+                                        tabindex="0"
+                                        :aria-expanded="open.toString()"
+                                        @click="open = !open"
+                                        @keydown.enter.prevent="open = !open"
+                                        @keydown.space.prevent="open = !open"
+                                    >
+                                        <td class="bg-gray-50 px-2 py-3 text-gray-800 transition-colors group-hover:bg-gray-100/90">
+                                            <div class="flex items-start gap-2.5">
+                                                <span class="pointer-events-none mt-0.5 shrink-0 text-gray-500 transition-colors duration-150 group-hover:text-gray-700">
+                                                    <svg class="h-5 w-5 transition-transform duration-200 ease-out" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                                                </span>
+                                                <div class="min-w-0 pt-0.5">
+                                                    <span class="font-medium text-gray-900">{{ $items->first()->name }}</span>
                                                     @php($payCount = $items->count())
                                                     <p class="mt-0.5 text-xs text-gray-500">{{ $payCount }} {{ $payCount === 1 ? __('payment') : __('payments') }} · {{ __('this month') }}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-2 py-3 text-center">
+                                        <td class="bg-gray-50 px-2 py-3 text-center transition-colors group-hover:bg-gray-100/90">
                                             <span class="inline-flex min-w-[2.25rem] justify-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium tabular-nums text-violet-800 sm:min-w-[2.5rem]" title="{{ __('Repeating') }}">{{ __('Yes') }}</span>
                                         </td>
-                                        <td class="px-2 py-3 text-gray-700">{{ $items->first()->category }}</td>
-                                        <td class="px-2 py-3 text-gray-700">{{ \Illuminate\Support\Carbon::parse($items->min('date'))->format('j M') }} – {{ \Illuminate\Support\Carbon::parse($items->max('date'))->format('j M') }}</td>
-                                        <td class="px-2 py-3 text-right font-semibold text-gray-900">@money($groupTotal)</td>
-                                        <td class="whitespace-nowrap px-2 py-3 text-right text-xs text-gray-500">{{ __('Expand for actions') }}</td>
+                                        <td class="bg-gray-50 px-2 py-3 text-gray-700 transition-colors group-hover:bg-gray-100/90">{{ $items->first()->category }}</td>
+                                        <td class="bg-gray-50 px-2 py-3 text-gray-700 transition-colors group-hover:bg-gray-100/90">{{ \Illuminate\Support\Carbon::parse($items->min('date'))->format('j M') }} – {{ \Illuminate\Support\Carbon::parse($items->max('date'))->format('j M') }}</td>
+                                        <td class="bg-gray-50 px-2 py-3 text-right font-semibold text-gray-900 transition-colors group-hover:bg-gray-100/90">@money($groupTotal)</td>
+                                        <td class="whitespace-nowrap bg-gray-50 px-2 py-3 text-right align-middle transition-colors group-hover:bg-gray-100/90">&nbsp;</td>
                                     </tr>
                                     @foreach ($items as $expense)
                                         <tr x-show="open" x-cloak class="bg-gray-50/90 text-sm">
