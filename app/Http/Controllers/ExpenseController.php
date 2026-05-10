@@ -6,6 +6,7 @@ use App\Models\Expense;
 use App\Models\RecurringExpense;
 use App\Services\RecurringMaterializer;
 use App\Services\RecurringRuleSync;
+use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -294,7 +295,7 @@ class ExpenseController extends Controller
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0'],
+            'amount' => ['required', 'numeric', 'min:0', 'max:'.Money::MAX_AMOUNT],
             'category' => ['required', 'string', 'in:'.$allowedCategories],
             'date' => ['required', 'date'],
         ];

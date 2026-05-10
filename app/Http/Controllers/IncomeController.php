@@ -6,6 +6,7 @@ use App\Models\Income;
 use App\Models\RecurringIncome;
 use App\Services\RecurringMaterializer;
 use App\Services\RecurringRuleSync;
+use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class IncomeController extends Controller
     {
         $validated = $request->validate([
             'income_name' => ['required', 'string', 'max:255'],
-            'income_amount' => ['required', 'numeric', 'min:0'],
+            'income_amount' => ['required', 'numeric', 'min:0', 'max:'.Money::MAX_AMOUNT],
             'income_date' => ['required', 'date'],
             'income_recurring' => ['sometimes', 'boolean'],
         ], [], [
@@ -74,7 +75,7 @@ class IncomeController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0'],
+            'amount' => ['required', 'numeric', 'min:0', 'max:'.Money::MAX_AMOUNT],
             'date' => ['required', 'date'],
             'return_year' => ['nullable', 'integer'],
             'return_month' => ['nullable', 'integer', 'min:1', 'max:12'],
