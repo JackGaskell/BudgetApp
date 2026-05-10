@@ -45,7 +45,7 @@
                                 @if ($row['kind'] === 'single')
                                     @php($expense = $row['expense'])
                         <tbody class="divide-y divide-gray-100">
-                                    <tr class="group">
+                                    <tr>
                                         <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
                                             <span class="line-clamp-2 font-medium text-gray-900">{{ $expense->name }}</span>
                                         </td>
@@ -68,7 +68,7 @@
                                             {{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}
                                         </td>
                                         <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">@money($expense->amount)</td>
-                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-50 sm:py-3 sm:pl-4">
+                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] sm:py-3 sm:pl-4">
                                             <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
                                                 <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
                                                     {!! $editExpenseIcon !!}
@@ -130,7 +130,7 @@
                                         <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] transition-colors group-hover:bg-gray-100/90 sm:py-3 sm:pl-4">&nbsp;</td>
                                     </tr>
                                     @foreach ($items as $expense)
-                                        <tr x-show="open" x-cloak class="group bg-gray-50/90 text-xs sm:text-sm">
+                                        <tr x-show="open" x-cloak class="bg-gray-50/90 text-xs sm:text-sm">
                                             <td class="max-w-[10rem] py-2 pr-2 pl-7 align-top sm:max-w-[12rem] sm:py-2.5 sm:pr-3 sm:pl-8">
                                                 <span class="text-gray-600">{{ $expense->name }}</span>
                                             </td>
@@ -149,7 +149,7 @@
                                                 {{ \Illuminate\Support\Carbon::parse($expense->date)->format('j M Y') }}
                                             </td>
                                             <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-2.5">@money($expense->amount)</td>
-                                            <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50/90 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-100/90 sm:py-2.5 sm:pl-4">
+                                            <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50/90 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] sm:py-2.5 sm:pl-4">
                                                 <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
                                                     <a href="{{ route('expenses.edit', array_merge(['expense' => $expense], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
                                                         {!! $editExpenseIcon !!}
@@ -211,7 +211,7 @@
                                 @if ($row['kind'] === 'single')
                                     @php($income = $row['income'])
                         <tbody class="divide-y divide-gray-100">
-                                    <tr class="group">
+                                    <tr>
                                         <td class="max-w-[10rem] py-2 pr-2 align-top sm:max-w-[12rem] sm:py-3 sm:pr-3">
                                             <span class="line-clamp-2 font-medium text-gray-900">{{ $income->name }}</span>
                                         </td>
@@ -233,7 +233,7 @@
                                             {{ \Illuminate\Support\Carbon::parse($income->date)->format('j M Y') }}
                                         </td>
                                         <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-3">@money($income->amount)</td>
-                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-50 sm:py-3 sm:pl-4">
+                                        <td class="sticky right-0 z-10 whitespace-nowrap bg-white py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] sm:py-3 sm:pl-4">
                                             <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
                                                 <a href="{{ route('income.edit', array_merge(['income' => $income], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
                                                     {!! $editExpenseIcon !!}
@@ -294,7 +294,7 @@
                                         <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] transition-colors group-hover:bg-gray-100/90 sm:py-3 sm:pl-4">&nbsp;</td>
                                     </tr>
                                     @foreach ($items as $income)
-                                        <tr x-show="open" x-cloak class="group bg-gray-50/90 text-xs sm:text-sm">
+                                        <tr x-show="open" x-cloak class="bg-gray-50/90 text-xs sm:text-sm">
                                             <td class="max-w-[10rem] py-2 pr-2 pl-7 align-top sm:max-w-[12rem] sm:py-2.5 sm:pr-3 sm:pl-8">
                                                 <span class="text-gray-600">{{ $income->name }}</span>
                                             </td>
@@ -312,7 +312,7 @@
                                                 {{ \Illuminate\Support\Carbon::parse($income->date)->format('j M Y') }}
                                             </td>
                                             <td class="whitespace-nowrap px-2 py-2 text-right align-top font-medium tabular-nums text-gray-900 sm:py-2.5">@money($income->amount)</td>
-                                            <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50/90 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] group-hover:bg-gray-100/90 sm:py-2.5 sm:pl-4">
+                                            <td class="sticky right-0 z-10 whitespace-nowrap bg-gray-50/90 py-2 pl-3 pr-0 text-right align-top shadow-[-12px_0_12px_-8px_rgba(0,0,0,0.06)] sm:py-2.5 sm:pl-4">
                                                 <div class="inline-flex items-center justify-end gap-0.5 sm:gap-1">
                                                     <a href="{{ route('income.edit', array_merge(['income' => $income], \App\Support\ViewMonth::queryParams($view_year, $view_month))) }}" class="inline-flex items-center justify-center rounded-md p-1.5 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title="{{ __('Edit') }}">
                                                         {!! $editExpenseIcon !!}
