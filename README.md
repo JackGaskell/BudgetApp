@@ -2,9 +2,9 @@
 
 A small **Laravel** web app for tracking **income and expenses in GBP**, aimed at students (or anyone) who want a clear view of the **current month**: what has already happened, what is still scheduled, and where money goes by category.
 
-I put it together as a **portfolio project** — auth, validation, Blade + Tailwind, and a few PHPUnit tests.
+I put it together as a **portfolio project** — auth, validation, Blade + Tailwind, plus PHPUnit for the core HTTP flows.
 
-In the repo you will find the usual bits: CRUD, server-side validation, Blade layouts/components, a dashboard that rolls up user data, and feature tests for the main HTTP flows.
+In the repo you will find the usual bits: CRUD, server-side validation, Blade layouts/components, a dashboard that rolls up user data, and PHPUnit coverage for the main HTTP flows including recurring money movements.
 
 ---
 
@@ -27,12 +27,18 @@ Quick notes if you are reading the code or clicking around:
 
 All presentation amounts use a small **GBP** formatting helper and the `@money` Blade directive (see `app/Support/Money.php`).
 
+### Recurring income and expenses
+
+You set **repeat monthly** when adding or editing a row (no separate “recurring centre”). The app keeps a **billing day of month** per schedule and **fills in** the matching transaction when you open **Dashboard** or **Records** for a given month, so future months show the same item without you re-entering it. If something should only run for a while, you can clear repeat on edit — that drops the schedule and **removes the copied rows in other months** so they do not linger.
+
+Deleting a row that was tied to a repeat schedule **cancels the whole schedule** for that label and day (including stray copies that lost their link). That way nothing creeps back in when you change month or reload the page. A bookmark to `/recurring` still works; it simply **redirects to Records** for the current month.
+
 ---
 
 ## Highlights
 
-- **Dashboard** — Current balance (cash basis to today), month stats (actual vs scheduled income/expenses), projected end-of-month balance, daily budget hint, month-end outlook, **spending breakdown** by category (includes upcoming bills), recent expenses, quick **add income / add expense** forms.
-- **Records** — Tabular history with status (paid/upcoming), **edit** expenses, **delete** with confirmation dialogs for expenses and income.
+- **Dashboard** — Current balance (cash basis to today), month stats (actual vs scheduled income/expenses), projected end-of-month balance, daily budget hint, month-end outlook, **spending breakdown** by category (includes upcoming bills), **recent expenses** with edit and delete, quick **add income / add expense** forms (including repeat monthly).
+- **Records** — Month picker, tabular history with status (paid/upcoming), **edit** and **delete** with confirmation; table layout stays usable on small screens (actions stay reachable).
 - **Profile & security** — Laravel Breeze: profile details, password change, account deletion (with confirmation).
 - **UX** — Shared layout across app and auth screens, responsive nav, flash messages, inline validation, GBP formatting via a small money helper and `@money` Blade directive.
 
@@ -98,7 +104,7 @@ Set `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` 
 php artisan test
 ```
 
-The suite covers auth flows, expense categories and validation, expense updates, profile actions, and a few unit checks (e.g. money formatting).
+The suite covers auth flows, expense categories and validation, expense and income updates, profile actions, recurring create/stop/delete behaviour, materialization for a viewed month, and edge cases around **deleting** repeating items (rules gone for good, no duplicate rows, other users untouched). Unit tests cover money formatting and month query helpers.
 
 ---
 
@@ -107,8 +113,9 @@ The suite covers auth flows, expense categories and validation, expense updates,
 | Path | Role |
 |------|------|
 | `app/Http/Controllers/` | Dashboard, records, income/expense CRUD, profile |
-| `app/Models/` | `User`, `Income`, `Expense` |
+| `app/Models/` | `User`, `Income`, `Expense`, `RecurringIncome`, `RecurringExpense` |
+| `app/Services/RecurringMaterializer.php` | Ensures each active schedule has one row for the month you are viewing |
 | `app/Support/Money.php` | GBP display formatting |
 | `resources/views/` | Blade layouts (`layouts/budget*`, `layouts/app`), dashboard, records, auth |
-| `routes/web.php` | Authenticated routes + Breeze auth |
-| `tests/Feature/` | HTTP / integration tests |
+| `routes/web.php` | Authenticated routes + Breeze auth (`/recurring` → Records) |
+| `tests/Feature/` | HTTP tests (including `RecurringManagementTest`, `RecurringMaterializationTest`, `RecurringDeleteEdgeCasesTest`) |
