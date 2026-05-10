@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class RecurringMaterializer
 {
     /**
-     * Ensure one expense/income row exists per recurring rule for this calendar month.
+     * Ensure expense/income rows exist for recurring rules in this calendar month.
      */
     public function materializeMonth(User $user, int $year, int $month): void
     {
@@ -18,11 +18,19 @@ class RecurringMaterializer
         $monthEnd = $monthStart->copy()->endOfMonth();
 
         foreach ($user->recurringExpenses()->cursor() as $rule) {
-            $this->materializeRecurringExpense($user, $rule, $monthStart, $monthEnd);
+            if ($rule->isWeekly()) {
+                $this->materializeRecurringExpenseWeekly($user, $rule, $monthStart, $monthEnd);
+            } else {
+                $this->materializeRecurringExpenseMonthly($user, $rule, $monthStart, $monthEnd);
+            }
         }
 
         foreach ($user->recurringIncomes()->cursor() as $rule) {
-            $this->materializeRecurringIncome($user, $rule, $monthStart, $monthEnd);
+            if ($rule->isWeekly()) {
+                $this->materializeRecurringIncomeWeekly($user, $rule, $monthStart, $monthEnd);
+            } else {
+                $this->materializeRecurringIncomeMonthly($user, $rule, $monthStart, $monthEnd);
+            }
         }
     }
 
@@ -40,7 +48,7 @@ class RecurringMaterializer
         }
     }
 
-    private function materializeRecurringExpense(User $user, RecurringExpense $rule, Carbon $monthStart, Carbon $monthEnd): void
+    private function materializeRecurringExpenseMonthly(User $user, RecurringExpense $rule, Carbon $monthStart, Carbon $monthEnd): void
     {
         if ($monthEnd->lt(Carbon::parse($rule->starts_on)->startOfDay())) {
             return;
@@ -50,7 +58,7 @@ class RecurringMaterializer
             return;
         }
 
-        $occurrence = $this->occurrenceDateInMonth($rule->day_of_month, $monthStart->year, $monthStart->month);
+        $occurrence = $this->occurrenceDateInMonth((int) $rule->day_of_month, $monthStart->year, $monthStart->month);
         if ($occurrence->lt(Carbon::parse($rule->starts_on)->startOfDay())) {
             return;
         }
@@ -59,6 +67,52 @@ class RecurringMaterializer
             return;
         }
 
+        $this->firstOrCreateExpenseOccurrence($user, $rule, $occurrence);
+    }
+
+    private function materializeRecurringExpenseWeekly(User $user, RecurringExpense $rule, Carbon $monthStart, Carbon $monthEnd): void
+    {
+        if ($rule->day_of_week === null) {
+            return;
+        }
+
+        if ($monthEnd->lt(Carbon::parse($rule->starts_on)->startOfDay())) {
+            return;
+        }
+
+        if ($rule->ends_on && $monthStart->gt(Carbon::parse($rule->ends_on)->endOfDay())) {
+            return;
+        }
+
+        $startsOn = Carbon::parse($rule->starts_on)->startOfDay();
+        $endsOn = $rule->ends_on ? Carbon::parse($rule->ends_on)->endOfDay() : null;
+        $targetDow = (int) $rule->day_of_week;
+
+        $cursor = $monthStart->copy();
+        while ($cursor->lte($monthEnd)) {
+            if ((int) $cursor->dayOfWeek !== $targetDow) {
+                $cursor->addDay();
+
+                continue;
+            }
+
+            if ($cursor->lt($startsOn)) {
+                $cursor->addDay();
+
+                continue;
+            }
+
+            if ($endsOn && $cursor->gt($endsOn)) {
+                break;
+            }
+
+            $this->firstOrCreateExpenseOccurrence($user, $rule, $cursor->copy());
+            $cursor->addDay();
+        }
+    }
+
+    private function firstOrCreateExpenseOccurrence(User $user, RecurringExpense $rule, Carbon $occurrence): void
+    {
         $dateStr = $occurrence->toDateString();
 
         $user->expenses()->firstOrCreate(
@@ -74,7 +128,7 @@ class RecurringMaterializer
         );
     }
 
-    private function materializeRecurringIncome(User $user, RecurringIncome $rule, Carbon $monthStart, Carbon $monthEnd): void
+    private function materializeRecurringIncomeMonthly(User $user, RecurringIncome $rule, Carbon $monthStart, Carbon $monthEnd): void
     {
         if ($monthEnd->lt(Carbon::parse($rule->starts_on)->startOfDay())) {
             return;
@@ -84,7 +138,7 @@ class RecurringMaterializer
             return;
         }
 
-        $occurrence = $this->occurrenceDateInMonth($rule->day_of_month, $monthStart->year, $monthStart->month);
+        $occurrence = $this->occurrenceDateInMonth((int) $rule->day_of_month, $monthStart->year, $monthStart->month);
         if ($occurrence->lt(Carbon::parse($rule->starts_on)->startOfDay())) {
             return;
         }
@@ -93,6 +147,52 @@ class RecurringMaterializer
             return;
         }
 
+        $this->firstOrCreateIncomeOccurrence($user, $rule, $occurrence);
+    }
+
+    private function materializeRecurringIncomeWeekly(User $user, RecurringIncome $rule, Carbon $monthStart, Carbon $monthEnd): void
+    {
+        if ($rule->day_of_week === null) {
+            return;
+        }
+
+        if ($monthEnd->lt(Carbon::parse($rule->starts_on)->startOfDay())) {
+            return;
+        }
+
+        if ($rule->ends_on && $monthStart->gt(Carbon::parse($rule->ends_on)->endOfDay())) {
+            return;
+        }
+
+        $startsOn = Carbon::parse($rule->starts_on)->startOfDay();
+        $endsOn = $rule->ends_on ? Carbon::parse($rule->ends_on)->endOfDay() : null;
+        $targetDow = (int) $rule->day_of_week;
+
+        $cursor = $monthStart->copy();
+        while ($cursor->lte($monthEnd)) {
+            if ((int) $cursor->dayOfWeek !== $targetDow) {
+                $cursor->addDay();
+
+                continue;
+            }
+
+            if ($cursor->lt($startsOn)) {
+                $cursor->addDay();
+
+                continue;
+            }
+
+            if ($endsOn && $cursor->gt($endsOn)) {
+                break;
+            }
+
+            $this->firstOrCreateIncomeOccurrence($user, $rule, $cursor->copy());
+            $cursor->addDay();
+        }
+    }
+
+    private function firstOrCreateIncomeOccurrence(User $user, RecurringIncome $rule, Carbon $occurrence): void
+    {
         $dateStr = $occurrence->toDateString();
 
         $user->incomes()->firstOrCreate(

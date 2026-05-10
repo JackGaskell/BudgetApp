@@ -21,7 +21,9 @@ class RecurringExpenseFactory extends Factory
             'name' => fake()->words(2, true),
             'amount' => fake()->randomFloat(2, 5, 500),
             'category' => fake()->randomElement(Expense::CATEGORIES),
+            'frequency' => RecurringExpense::FREQUENCY_MONTHLY,
             'day_of_month' => fake()->numberBetween(1, 28),
+            'day_of_week' => null,
             'starts_on' => now()->startOfMonth()->toDateString(),
             'ends_on' => null,
         ];

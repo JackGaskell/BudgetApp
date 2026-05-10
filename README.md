@@ -27,7 +27,9 @@ All presentation amounts use a small **GBP** formatting helper and the `@money` 
 
 ### Recurring income and expenses
 
-You set **repeat monthly** when adding or editing a row. The app keeps a **billing day of month** per schedule and **fills in** the matching transaction when you open **Dashboard** or **Records** for a given month, so future months show the same item without you re-entering it. If something should only run for a while, you can clear repeat on edit — that drops the schedule and **removes the copied rows in other months** so they do not linger.
+When adding or editing a row, you can turn on **Repeat** and choose **every month (same calendar day)** or **every week (same weekday)**. The app stores a schedule per rule and **materialises** matching rows when you open **Dashboard** or **Records** for a given month, so you don’t re-enter the same bill or pay day. On **Records**, multiple payments from the same weekly (or monthly) rule in one month can appear **grouped** with an expand row to see each date.
+
+To **stop** repeating (weekly or monthly), edit any occurrence, **turn off Repeat**, and save — that drops the schedule and, where applicable, **removes copied rows in other months** so they don’t linger.
 
 Deleting a row that was tied to a repeat schedule **cancels the whole schedule** for that label and day (including stray copies that lost their link). That way nothing creeps back in when you change month or reload the page. **`/recurring`** redirects to **Records** (current month).
 
@@ -35,8 +37,8 @@ Deleting a row that was tied to a repeat schedule **cancels the whole schedule**
 
 ## Highlights
 
-- **Dashboard** — Current balance (cash basis to today), month stats (actual vs scheduled income/expenses), projected end-of-month balance, daily budget hint, month-end outlook, **spending breakdown** by category (includes upcoming bills), **recent expenses** with edit and delete, quick **add income / add expense** forms (including repeat monthly).
-- **Records** — Month picker, tabular history with status (paid/upcoming), **edit** and **delete** with confirmation; table layout stays usable on small screens (actions stay reachable).
+- **Dashboard** — Current balance (cash basis to today), month stats (actual vs scheduled income/expenses), projected end-of-month balance, daily budget hint, month-end outlook, **spending breakdown** by category (includes upcoming bills), **recent expenses** with edit and delete (recurring items in the same month may **group** behind one expandable row), quick **add income / add expense** (optional **Repeat**: monthly or weekly).
+- **Records** — Month picker, tabular history with status (paid/upcoming), grouping for multiple same-rule payments in a month, **edit** and **delete** with confirmation; table layout stays usable on small screens (actions stay reachable).
 - **Profile & security** — Laravel Breeze: profile details, password change, account deletion (with confirmation).
 - **UX** — Shared layout across app and auth screens, responsive nav, flash messages, inline validation, GBP formatting via a small money helper and `@money` Blade directive.
 
@@ -102,7 +104,7 @@ Set `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` 
 php artisan test
 ```
 
-The suite covers auth flows, expense categories and validation, expense and income updates, profile actions, recurring create/stop/delete behaviour, materialization for a viewed month, and edge cases around **deleting** repeating items (rules gone for good, no duplicate rows, other users untouched). Unit tests cover money formatting and month query helpers.
+The suite covers auth flows, expense categories and validation, expense and income updates, profile actions, recurring create/stop/delete behaviour, materialization for a viewed month (including **weekly** rules), and edge cases around **deleting** repeating items (rules gone for good, no duplicate rows, other users untouched). Unit tests cover money formatting and month query helpers.
 
 ---
 
@@ -112,7 +114,8 @@ The suite covers auth flows, expense categories and validation, expense and inco
 |------|------|
 | `app/Http/Controllers/` | Dashboard, records, income/expense CRUD, profile |
 | `app/Models/` | `User`, `Income`, `Expense`, `RecurringIncome`, `RecurringExpense` |
-| `app/Services/RecurringMaterializer.php` | Ensures each active schedule has one row for the month you are viewing |
+| `app/Services/RecurringMaterializer.php` | Ensures active schedules have materialised rows for the month you are viewing (monthly and weekly rules) |
+| `app/Support/GroupedTransactionRows.php` | Groups same-rule recurring lines in the month for Records / dashboard tables |
 | `app/Support/Money.php` | GBP display formatting |
 | `resources/views/` | Blade layouts (`layouts/budget*`, `layouts/app`), dashboard, records, auth |
 | `routes/web.php` | Authenticated routes + Breeze auth (`/recurring` → Records) |

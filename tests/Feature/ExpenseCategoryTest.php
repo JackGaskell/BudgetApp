@@ -20,7 +20,7 @@ class ExpenseCategoryTest extends TestCase
             ->get('/dashboard');
 
         $response->assertOk();
-        $response->assertSeeText('Repeat monthly');
+        $response->assertSeeText('Repeat');
         $response->assertSeeText('Select a category');
 
         foreach (Expense::CATEGORIES as $category) {
@@ -101,6 +101,52 @@ class ExpenseCategoryTest extends TestCase
         $this->assertDatabaseMissing('expenses', [
             'user_id' => $user->id,
             'name' => 'Invalid',
+        ]);
+    }
+
+    public function test_user_cannot_create_expense_with_amount_above_max(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/dashboard')
+            ->post('/expenses', [
+                'name' => 'Too big',
+                'amount' => '10000000000000',
+                'category' => 'Food',
+                'date' => now()->toDateString(),
+            ]);
+
+        $response->assertSessionHasErrors('amount');
+
+        $this->assertDatabaseMissing('expenses', [
+            'user_id' => $user->id,
+            'name' => 'Too big',
+        ]);
+    }
+
+    public function test_user_can_create_expense_with_very_large_allowed_amount(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->post('/expenses', [
+                'name' => 'Big ticket',
+                'amount' => '10000000.00',
+                'category' => 'Food',
+                'date' => now()->toDateString(),
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('expenses', [
+            'user_id' => $user->id,
+            'name' => 'Big ticket',
+            'amount' => '10000000.00',
         ]);
     }
 }

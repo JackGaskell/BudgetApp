@@ -52,9 +52,24 @@
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-                <div class="flex items-start gap-3 border-t border-gray-100 pt-4">
-                    <input id="expense_recurring" name="recurring" type="checkbox" value="1" @checked(old('recurring', (bool) $expense->recurring_expense_id)) class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                    <label for="expense_recurring" class="text-sm text-gray-700">{{ __('Repeat monthly') }}</label>
+                @php
+                    $defaultRecurringFrequency = old('recurring_frequency', $expense->recurringExpense?->frequency ?? 'monthly');
+                @endphp
+                <div class="space-y-3 border-t border-gray-100 pt-4" x-data="{ recurring: @json((bool) old('recurring', $expense->recurring_expense_id)) }">
+                    <div class="flex items-start gap-3">
+                        <input id="expense_recurring" name="recurring" type="checkbox" value="1" x-model.boolean="recurring" class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900">
+                        <div class="min-w-0 flex-1">
+                            <label for="expense_recurring" class="text-sm font-medium text-gray-700">{{ __('Repeat') }}</label>
+                            <div class="mt-2 pl-0 sm:pl-0" x-show="recurring" x-cloak>
+                                <label for="recurring_frequency" class="mb-1 block text-xs text-gray-500">{{ __('How often') }}</label>
+                                <select id="recurring_frequency" name="recurring_frequency" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm" x-bind:disabled="!recurring">
+                                    <option value="monthly" @selected($defaultRecurringFrequency === 'monthly')>{{ __('Every month (same calendar day)') }}</option>
+                                    <option value="weekly" @selected($defaultRecurringFrequency === 'weekly')>{{ __('Every week (same weekday)') }}</option>
+                                </select>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500" x-show="recurring" x-cloak>{{ __('To stop repeating, turn off Repeat above and save. Future weeks or months won’t be added; entries already in your records stay.') }}</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex flex-wrap gap-3 pt-2">
                     <button type="submit" class="rounded-lg border border-gray-900 bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">{{ __('Save changes') }}</button>

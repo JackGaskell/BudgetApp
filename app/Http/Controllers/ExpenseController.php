@@ -6,6 +6,7 @@ use App\Models\Expense;
 use App\Models\RecurringExpense;
 use App\Services\RecurringMaterializer;
 use App\Services\RecurringRuleSync;
+use App\Support\Money;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -30,6 +31,8 @@ class ExpenseController extends Controller
     {
         $this->authorizeExpense($request, $expense);
 
+        $expense->load('recurringExpense');
+
         return view('expenses.edit', [
             'expense' => $expense,
             'expense_categories' => Expense::CATEGORIES,
@@ -46,15 +49,17 @@ class ExpenseController extends Controller
         ));
 
         if ($request->boolean('recurring')) {
+            $request->validate(['recurring_frequency' => ['required', 'in:monthly,weekly']]);
             $date = Carbon::parse($validated['date']);
-            $request->user()->recurringExpenses()->create([
+            $frequency = $this->resolveRecurringExpenseFrequency($request);
+            $schedule = $this->recurringExpenseScheduleFields($date, $frequency);
+            $request->user()->recurringExpenses()->create(array_merge([
                 'name' => $validated['name'],
                 'amount' => $validated['amount'],
                 'category' => $validated['category'],
-                'day_of_month' => $date->day,
                 'starts_on' => $validated['date'],
                 'ends_on' => null,
-            ]);
+            ], $schedule));
             $materializer->materializeMonth($request->user(), $date->year, $date->month);
             $materializer->materializeUpcomingMonths($request->user());
 
@@ -76,6 +81,7 @@ class ExpenseController extends Controller
                 'return_year' => ['nullable', 'integer'],
                 'return_month' => ['nullable', 'integer', 'min:1', 'max:12'],
                 'recurring' => ['sometimes', 'boolean'],
+                'recurring_frequency' => ['nullable', 'in:monthly,weekly'],
             ]
         ));
 
@@ -96,26 +102,49 @@ class ExpenseController extends Controller
         if ($wantsRecurring && $expense->recurring_expense_id) {
             $rule = $expense->recurringExpense;
             if ($rule !== null) {
+                if ($request->has('recurring_frequency')) {
+                    $request->validate(['recurring_frequency' => ['required', 'in:monthly,weekly']]);
+                }
                 $date = Carbon::parse($validated['date']);
-                $rule->update([
-                    'name' => $validated['name'],
-                    'amount' => $validated['amount'],
-                    'category' => $validated['category'],
-                    'day_of_month' => $date->day,
-                ]);
-                $ruleSync->syncExpenseRuleToTransactions($rule->fresh());
+                $frequency = $this->resolveRecurringExpenseFrequency($request, $rule->frequency);
+                $schedule = $this->recurringExpenseScheduleFields($date, $frequency);
+                $beforeFreq = $rule->frequency;
+                $beforeDom = (int) $rule->day_of_month;
+                $beforeDow = $rule->day_of_week !== null ? (int) $rule->day_of_week : null;
+                $rule->update(array_merge(
+                    [
+                        'name' => $validated['name'],
+                        'amount' => $validated['amount'],
+                        'category' => $validated['category'],
+                    ],
+                    $schedule
+                ));
+                $rule->refresh();
+                $scheduleChanged = $beforeFreq !== $rule->frequency
+                    || ($rule->isMonthly() && $beforeDom !== (int) $rule->day_of_month)
+                    || ($rule->isWeekly() && $beforeDow !== (int) $rule->day_of_week);
+
+                if ($scheduleChanged) {
+                    $rule->expenses()->delete();
+                    $materializer->materializeMonth($request->user(), $date->year, $date->month);
+                    $materializer->materializeUpcomingMonths($request->user());
+                } else {
+                    $ruleSync->syncExpenseRuleToTransactions($rule->fresh());
+                }
             }
         } elseif ($wantsRecurring && ! $expense->recurring_expense_id) {
+            $request->validate(['recurring_frequency' => ['required', 'in:monthly,weekly']]);
             $expense->update(Arr::only($validated, ['name', 'amount', 'category', 'date']));
             $date = Carbon::parse($validated['date']);
-            $rule = $request->user()->recurringExpenses()->create([
+            $frequency = $this->resolveRecurringExpenseFrequency($request);
+            $schedule = $this->recurringExpenseScheduleFields($date, $frequency);
+            $rule = $request->user()->recurringExpenses()->create(array_merge([
                 'name' => $validated['name'],
                 'amount' => $validated['amount'],
                 'category' => $validated['category'],
-                'day_of_month' => $date->day,
                 'starts_on' => $validated['date'],
                 'ends_on' => null,
-            ]);
+            ], $schedule));
             $expense->update(['recurring_expense_id' => $rule->id]);
             $materializer->materializeMonth($request->user(), $date->year, $date->month);
             $materializer->materializeUpcomingMonths($request->user());
@@ -133,37 +162,73 @@ class ExpenseController extends Controller
         DB::transaction(function () use ($request, $expense): void {
             $userId = $request->user()->id;
             $rule = $expense->recurringExpense;
-            if ($rule !== null && $rule->user_id === $userId) {
-                $canonicalName = trim($rule->name);
-                $billingDay = (int) $rule->day_of_month;
-            } else {
-                $canonicalName = trim($expense->name);
-                $billingDay = (int) Carbon::parse($expense->date)->day;
-            }
+            $canonicalName = $rule !== null && $rule->user_id === $userId
+                ? trim($rule->name)
+                : trim($expense->name);
 
-            // Drop rules first so materializeMonth cannot recreate rows on the next page load.
-            $this->purgeRecurringExpenseRulesForUserByNameAndDay($userId, $canonicalName, $billingDay);
+            if ($rule !== null && $rule->user_id === $userId) {
+                $this->purgeRecurringExpenseRulesMatchingSchedule($userId, $canonicalName, $rule);
+            } else {
+                $this->purgeRecurringExpenseRulesForExpenseWithNoRule($userId, $canonicalName, $expense);
+            }
 
             Expense::query()->whereKey($expense->id)->where('user_id', $userId)->delete();
 
-            // Duplicates / legacy rows (often null recurring_expense_id), including amount/category drift.
-            $this->deleteOrphanExpensesByNameAndDay($userId, $canonicalName, $billingDay);
+            $this->deleteOrphanExpensesByNameAndDay($userId, $canonicalName, (int) Carbon::parse($expense->date)->day);
+            $this->deleteOrphanExpensesByNameAndWeekday(
+                $userId,
+                $canonicalName,
+                (int) Carbon::parse($expense->date)->dayOfWeek
+            );
         });
 
         return redirect()->back()->with('status', __('Expense deleted successfully.'));
     }
 
-    private function purgeRecurringExpenseRulesForUserByNameAndDay(int $userId, string $canonicalName, int $billingDay): void
+    private function purgeRecurringExpenseRulesMatchingSchedule(int $userId, string $canonicalName, RecurringExpense $match): void
     {
-        $rules = RecurringExpense::query()
+        $query = RecurringExpense::query()
             ->where('user_id', $userId)
-            ->where('day_of_month', $billingDay)
+            ->whereRaw('LOWER(TRIM(name)) = LOWER(?)', [$canonicalName])
+            ->where('frequency', $match->frequency);
+
+        if ($match->isWeekly()) {
+            $query->where('day_of_week', $match->day_of_week);
+        } else {
+            $query->where('day_of_month', $match->day_of_month);
+        }
+
+        foreach ($query->get() as $r) {
+            $r->expenses()->delete();
+            $r->delete();
+        }
+    }
+
+    /**
+     * When deleting a one-off row, purge rules that could have produced duplicates with the same label and schedule hints.
+     */
+    private function purgeRecurringExpenseRulesForExpenseWithNoRule(int $userId, string $canonicalName, Expense $expense): void
+    {
+        $date = Carbon::parse($expense->date);
+        $monthly = RecurringExpense::query()
+            ->where('user_id', $userId)
+            ->where('frequency', RecurringExpense::FREQUENCY_MONTHLY)
+            ->where('day_of_month', $date->day)
             ->whereRaw('LOWER(TRIM(name)) = LOWER(?)', [$canonicalName])
             ->get();
-
-        foreach ($rules as $rule) {
-            $rule->expenses()->delete();
-            $rule->delete();
+        foreach ($monthly as $r) {
+            $r->expenses()->delete();
+            $r->delete();
+        }
+        $weekly = RecurringExpense::query()
+            ->where('user_id', $userId)
+            ->where('frequency', RecurringExpense::FREQUENCY_WEEKLY)
+            ->where('day_of_week', $date->dayOfWeek)
+            ->whereRaw('LOWER(TRIM(name)) = LOWER(?)', [$canonicalName])
+            ->get();
+        foreach ($weekly as $r) {
+            $r->expenses()->delete();
+            $r->delete();
         }
     }
 
@@ -177,6 +242,50 @@ class ExpenseController extends Controller
             ->delete();
     }
 
+    private function deleteOrphanExpensesByNameAndWeekday(int $userId, string $canonicalName, int $dayOfWeek): void
+    {
+        Expense::query()
+            ->where('user_id', $userId)
+            ->whereNull('recurring_expense_id')
+            ->whereRaw('LOWER(TRIM(name)) = LOWER(?)', [$canonicalName])
+            ->get()
+            ->each(function (Expense $expense) use ($dayOfWeek): void {
+                if ((int) Carbon::parse($expense->date)->dayOfWeek === $dayOfWeek) {
+                    $expense->delete();
+                }
+            });
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function recurringExpenseScheduleFields(Carbon $date, string $frequency): array
+    {
+        if ($frequency === RecurringExpense::FREQUENCY_WEEKLY) {
+            return [
+                'frequency' => RecurringExpense::FREQUENCY_WEEKLY,
+                'day_of_month' => $date->day,
+                'day_of_week' => $date->dayOfWeek,
+            ];
+        }
+
+        return [
+            'frequency' => RecurringExpense::FREQUENCY_MONTHLY,
+            'day_of_month' => $date->day,
+            'day_of_week' => null,
+        ];
+    }
+
+    private function resolveRecurringExpenseFrequency(Request $request, ?string $default = null): string
+    {
+        $fallback = $default ?? RecurringExpense::FREQUENCY_MONTHLY;
+        $v = $request->input('recurring_frequency');
+
+        return in_array($v, [RecurringExpense::FREQUENCY_MONTHLY, RecurringExpense::FREQUENCY_WEEKLY], true)
+            ? $v
+            : $fallback;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -186,7 +295,7 @@ class ExpenseController extends Controller
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0'],
+            'amount' => ['required', 'numeric', 'min:0', 'max:'.Money::MAX_AMOUNT],
             'category' => ['required', 'string', 'in:'.$allowedCategories],
             'date' => ['required', 'date'],
         ];

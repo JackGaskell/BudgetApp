@@ -8,6 +8,9 @@ class Money
 
     public const CURRENCY = 'GBP';
 
+    /** Maximum amount storable in DB amount columns ({@see decimal(15, 2)} migrations). */
+    public const MAX_AMOUNT = '9999999999999.99';
+
     /**
      * Format a numeric amount as pound sterling (GBP) for display.
      */

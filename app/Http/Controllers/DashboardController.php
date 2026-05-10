@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\RecurringMaterializer;
+use App\Support\GroupedTransactionRows;
 use App\Support\ViewMonth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -79,12 +80,13 @@ class DashboardController extends Controller
             $dailyBudgetRemaining = null;
         }
 
-        $recentExpenses = $user->expenses()
+        $recentExpensePool = $user->expenses()
             ->whereYear('date', $year)
             ->whereMonth('date', $month)
             ->latest('date')
-            ->limit(5)
+            ->limit(40)
             ->get();
+        $recentExpenseRows = GroupedTransactionRows::forExpenses($recentExpensePool)->take(5);
 
         $actualCategoryTotals = $user->expenses()
             ->select('category', DB::raw('SUM(amount) as total'))
@@ -155,7 +157,8 @@ class DashboardController extends Controller
             'daily_budget_remaining' => $dailyBudgetRemaining,
             'spending_pace_daily_average' => $spendingPaceDailyAverage,
             'categories_with_totals' => $categoriesWithTotals,
-            'recent_expenses' => $recentExpenses,
+            'recent_expense_rows' => $recentExpenseRows,
+            'recent_expenses_for_dialogs' => GroupedTransactionRows::flattenExpenseRows($recentExpenseRows),
         ]);
     }
 }
