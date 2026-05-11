@@ -8,7 +8,7 @@ I put it together as a **portfolio project** — auth, validation, Blade + Tailw
 
 ## Live demo
 
-**Try it:** [https://budgetapp-main-4fnmmd.free.laravel.cloud](https://budgetapp-main-4fnmmd.free.laravel.cloud)  
+**Try it:** [https://budget-app-main-usyf7k.laravel.cloud/](https://budget-app-main-usyf7k.laravel.cloud/)  
 
 You can poke around there, or run it locally with **Quick start** below if you prefer.
 
