@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'is_student'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -28,7 +29,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_student' => 'boolean',
         ];
+    }
+
+    public function hasStudentFeatures(): bool
+    {
+        return (bool) $this->is_student;
     }
 
     public function incomes(): HasMany
@@ -49,5 +56,10 @@ class User extends Authenticatable
     public function recurringIncomes(): HasMany
     {
         return $this->hasMany(RecurringIncome::class);
+    }
+
+    public function studentFundingPlan(): HasOne
+    {
+        return $this->hasOne(StudentFundingPlan::class);
     }
 }

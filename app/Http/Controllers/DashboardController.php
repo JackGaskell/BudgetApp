@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\RecurringMaterializer;
+use App\Services\StudentFundingPlanCalculator;
 use App\Support\GroupedTransactionRows;
 use App\Support\ViewMonth;
 use Carbon\Carbon;
@@ -14,10 +15,14 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request, RecurringMaterializer $materializer): View
-    {
+    public function index(
+        Request $request,
+        RecurringMaterializer $materializer,
+        StudentFundingPlanCalculator $fundingCalculator,
+    ): View {
         /** @var User $user */
         $user = Auth::user();
+        $user->loadMissing('studentFundingPlan');
 
         [$year, $month] = ViewMonth::fromRequest($request);
         $materializer->materializeMonth($user, $year, $month);
@@ -136,6 +141,12 @@ class DashboardController extends Controller
         $prevMonth = $monthCursor->copy()->subMonth();
         $nextMonth = $monthCursor->copy()->addMonth();
 
+        $fundingSnapshot = null;
+        $fundingPlan = $user->studentFundingPlan()->first();
+        if ($user->hasStudentFeatures() && $fundingPlan) {
+            $fundingSnapshot = $fundingCalculator->snapshot($user, $fundingPlan);
+        }
+
         return view('dashboard', [
             'view_year' => $year,
             'view_month' => $month,
@@ -159,6 +170,7 @@ class DashboardController extends Controller
             'categories_with_totals' => $categoriesWithTotals,
             'recent_expense_rows' => $recentExpenseRows,
             'recent_expenses_for_dialogs' => GroupedTransactionRows::flattenExpenseRows($recentExpenseRows),
+            'funding_snapshot' => $fundingSnapshot,
         ]);
     }
 }

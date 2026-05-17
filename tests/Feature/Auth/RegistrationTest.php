@@ -14,6 +14,7 @@ class RegistrationTest extends TestCase
         $response = $this->get('/register');
 
         $response->assertStatus(200);
+        $response->assertSeeText('I’m a student');
     }
 
     public function test_new_users_can_register(): void
@@ -27,5 +28,20 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_new_users_can_register_as_student(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Student User',
+            'email' => 'student@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'is_student' => '1',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertTrue(auth()->user()->is_student);
     }
 }

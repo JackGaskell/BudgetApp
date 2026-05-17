@@ -47,6 +47,30 @@
             @endif
         </div>
 
+        <div class="border-t border-gray-100 pt-6">
+            <p class="text-sm font-medium text-gray-900">{{ __('Student features') }}</p>
+            <p class="mt-1 text-sm text-gray-600">
+                {{ __('Turn on tools for lump-sum student loans and spreading payments until your next loan.') }}
+            </p>
+            <div class="mt-4 flex items-start gap-3">
+                <input
+                    id="is_student"
+                    name="is_student"
+                    type="checkbox"
+                    value="1"
+                    @checked(old('is_student', $user->is_student))
+                    class="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                >
+                <div class="min-w-0">
+                    <label for="is_student" class="text-sm font-medium text-gray-700">{{ __('I’m a student') }}</label>
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ __('Show student loan planning on your dashboard. You can turn this off anytime.') }}
+                    </p>
+                </div>
+            </div>
+            <x-input-error class="mt-2" :messages="$errors->get('is_student')" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
