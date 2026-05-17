@@ -52,7 +52,7 @@
                 <div class="min-w-0">
                     <label for="is_student" class="text-sm font-medium text-gray-700">{{ __('I’m a student') }}</label>
                     <p class="mt-1 text-sm text-gray-500">
-                        {{ __('Show student loan planning on your dashboard. You can change this later in Profile.') }}
+                        {{ __('Show a student loan card on your dashboard to spread payments until your next loan.') }}
                     </p>
                 </div>
             </div>

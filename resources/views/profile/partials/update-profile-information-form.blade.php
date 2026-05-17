@@ -48,9 +48,9 @@
         </div>
 
         <div class="border-t border-gray-100 pt-6">
-            <p class="text-sm font-medium text-gray-900">{{ __('Student features') }}</p>
+            <p class="text-sm font-medium text-gray-900">{{ __('Student') }}</p>
             <p class="mt-1 text-sm text-gray-600">
-                {{ __('Turn on tools for lump-sum student loans and spreading payments until your next loan.') }}
+                {{ __('Turn on the student loan card on your dashboard.') }}
             </p>
             <div class="mt-4 flex items-start gap-3">
                 <input
@@ -64,7 +64,7 @@
                 <div class="min-w-0">
                     <label for="is_student" class="text-sm font-medium text-gray-700">{{ __('I’m a student') }}</label>
                     <p class="mt-1 text-sm text-gray-500">
-                        {{ __('Show student loan planning on your dashboard. You can turn this off anytime.') }}
+                        {{ __('You can change this anytime. When off, the loan card is hidden.') }}
                     </p>
                 </div>
             </div>

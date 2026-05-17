@@ -40,7 +40,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->create(['is_student' => false]);
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload())
+            ->post(route('funding-plan.store'), $this->validPlanPayload())
             ->assertForbidden();
     }
 
@@ -49,7 +49,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->student()->create();
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload())
+            ->post(route('funding-plan.store'), $this->validPlanPayload())
             ->assertRedirect(route('dashboard'))
             ->assertSessionHas('status');
 
@@ -68,13 +68,13 @@ class StudentFundingPlanTest extends TestCase
     {
         $user = User::factory()->student()->create();
 
-        $this->actingAs($user)->post(route('student.funding-plan.store'), $this->validPlanPayload());
+        $this->actingAs($user)->post(route('funding-plan.store'), $this->validPlanPayload());
 
         $plan = $user->fresh()->studentFundingPlan;
         $incomeId = $plan->income_id;
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload([
+            ->post(route('funding-plan.store'), $this->validPlanPayload([
                 'amount' => '3500',
                 'name' => 'Updated loan',
             ]))
@@ -91,11 +91,11 @@ class StudentFundingPlanTest extends TestCase
     {
         $user = User::factory()->student()->create();
 
-        $this->actingAs($user)->post(route('student.funding-plan.store'), $this->validPlanPayload());
+        $this->actingAs($user)->post(route('funding-plan.store'), $this->validPlanPayload());
         $incomeId = $user->fresh()->studentFundingPlan->income_id;
 
         $this->actingAs($user)
-            ->delete(route('student.funding-plan.destroy'))
+            ->delete(route('funding-plan.destroy'))
             ->assertRedirect(route('dashboard'));
 
         $this->assertNull($user->fresh()->studentFundingPlan);
@@ -156,18 +156,18 @@ class StudentFundingPlanTest extends TestCase
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSeeText('Spread from this loan');
-        $response->assertSeeText('Income this period');
+        $response->assertSeeText('Student loan');
+        $response->assertSeeText('Tap to view or edit');
 
         Carbon::setTestNow();
     }
 
     public function test_guest_cannot_store_or_destroy_funding_plan(): void
     {
-        $this->post(route('student.funding-plan.store'), $this->validPlanPayload())
+        $this->post(route('funding-plan.store'), $this->validPlanPayload())
             ->assertRedirect(route('login'));
 
-        $this->delete(route('student.funding-plan.destroy'))
+        $this->delete(route('funding-plan.destroy'))
             ->assertRedirect(route('login'));
     }
 
@@ -176,7 +176,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->create(['is_student' => false]);
 
         $this->actingAs($user)
-            ->delete(route('student.funding-plan.destroy'))
+            ->delete(route('funding-plan.destroy'))
             ->assertForbidden();
     }
 
@@ -185,7 +185,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->student()->create();
 
         $this->actingAs($user)
-            ->delete(route('student.funding-plan.destroy'))
+            ->delete(route('funding-plan.destroy'))
             ->assertRedirect(route('dashboard'))
             ->assertSessionHas('status');
     }
@@ -195,7 +195,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->student()->create();
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload([
+            ->post(route('funding-plan.store'), $this->validPlanPayload([
                 'received_on' => '2026-05-01',
                 'next_payment_on' => '2026-01-01',
             ]))
@@ -209,7 +209,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->student()->create();
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload([
+            ->post(route('funding-plan.store'), $this->validPlanPayload([
                 'spread_frequency' => 'daily',
             ]))
             ->assertSessionHasErrors('spread_frequency');
@@ -220,7 +220,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->student()->create();
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload([
+            ->post(route('funding-plan.store'), $this->validPlanPayload([
                 'amount' => '-10',
             ]))
             ->assertSessionHasErrors('amount');
@@ -231,7 +231,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->student()->create();
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload([
+            ->post(route('funding-plan.store'), $this->validPlanPayload([
                 'amount' => (string) ((float) Money::MAX_AMOUNT + 1),
             ]))
             ->assertSessionHasErrors('amount');
@@ -245,7 +245,7 @@ class StudentFundingPlanTest extends TestCase
         unset($payload['name']);
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $payload)
+            ->post(route('funding-plan.store'), $payload)
             ->assertSessionHasErrors('name');
     }
 
@@ -253,11 +253,11 @@ class StudentFundingPlanTest extends TestCase
     {
         $user = User::factory()->student()->create();
 
-        $this->actingAs($user)->post(route('student.funding-plan.store'), $this->validPlanPayload());
+        $this->actingAs($user)->post(route('funding-plan.store'), $this->validPlanPayload());
 
         $incomeId = $user->fresh()->studentFundingPlan->income_id;
 
-        $this->actingAs($user)->post(route('student.funding-plan.store'), $this->validPlanPayload([
+        $this->actingAs($user)->post(route('funding-plan.store'), $this->validPlanPayload([
             'received_on' => '2026-02-01',
         ]));
 
@@ -271,7 +271,7 @@ class StudentFundingPlanTest extends TestCase
 
         $user = User::factory()->student()->create();
 
-        $this->actingAs($user)->post(route('student.funding-plan.store'), $this->validPlanPayload([
+        $this->actingAs($user)->post(route('funding-plan.store'), $this->validPlanPayload([
             'spread_frequency' => StudentFundingPlan::FREQUENCY_WEEKLY,
         ]));
 
@@ -286,16 +286,15 @@ class StudentFundingPlanTest extends TestCase
             ->assertSeeText('/ week');
     }
 
-    public function test_student_without_plan_sees_setup_form_not_snapshot(): void
+    public function test_student_without_plan_sees_add_loan_card(): void
     {
         $user = User::factory()->student()->create();
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSeeText('Save loan plan');
-        $response->assertDontSeeText('Spread from this loan');
-        $response->assertDontSeeText('Income this period');
+        $response->assertSeeText('Add your loan');
+        $response->assertSeeText('Tap to set up');
     }
 
     public function test_loan_income_counts_toward_dashboard_balance_in_arrival_month(): void
@@ -304,7 +303,7 @@ class StudentFundingPlanTest extends TestCase
 
         $user = User::factory()->student()->create();
 
-        $this->actingAs($user)->post(route('student.funding-plan.store'), $this->validPlanPayload([
+        $this->actingAs($user)->post(route('funding-plan.store'), $this->validPlanPayload([
             'amount' => '2500',
             'received_on' => '2026-03-01',
             'next_payment_on' => '2026-07-01',
@@ -322,7 +321,7 @@ class StudentFundingPlanTest extends TestCase
 
         $user = User::factory()->student()->create();
 
-        $this->actingAs($user)->post(route('student.funding-plan.store'), $this->validPlanPayload([
+        $this->actingAs($user)->post(route('funding-plan.store'), $this->validPlanPayload([
             'amount' => '2500',
             'received_on' => '2026-03-01',
             'next_payment_on' => '2026-07-01',
@@ -330,7 +329,7 @@ class StudentFundingPlanTest extends TestCase
 
         $this->actingAs($user)->get(route('dashboard'))->assertSee('£2,500.00');
 
-        $this->actingAs($user)->delete(route('student.funding-plan.destroy'));
+        $this->actingAs($user)->delete(route('funding-plan.destroy'));
 
         $this->assertNull(Income::query()->where('user_id', $user->id)->first());
 
@@ -345,11 +344,11 @@ class StudentFundingPlanTest extends TestCase
     {
         $user = User::factory()->student()->create();
 
-        $this->actingAs($user)->post(route('student.funding-plan.store'), $this->validPlanPayload());
+        $this->actingAs($user)->post(route('funding-plan.store'), $this->validPlanPayload());
         $firstId = $user->fresh()->studentFundingPlan->id;
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload(['name' => 'Second save']))
+            ->post(route('funding-plan.store'), $this->validPlanPayload(['name' => 'Second save']))
             ->assertRedirect(route('dashboard'));
 
         $this->assertSame(1, StudentFundingPlan::query()->where('user_id', $user->id)->count());
@@ -362,7 +361,7 @@ class StudentFundingPlanTest extends TestCase
         $user = User::factory()->student()->create();
 
         $this->actingAs($user)
-            ->post(route('student.funding-plan.store'), $this->validPlanPayload([
+            ->post(route('funding-plan.store'), $this->validPlanPayload([
                 'amount' => '',
             ]))
             ->assertSessionHasErrors('amount');
@@ -370,7 +369,7 @@ class StudentFundingPlanTest extends TestCase
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSeeText('Student loan planning');
+            ->assertSeeText('Track a lump-sum loan');
     }
 
     public function test_dashboard_shows_loan_pace_warning_when_over_pace(): void
@@ -397,7 +396,7 @@ class StudentFundingPlanTest extends TestCase
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSeeText('above the even loan pace');
+            ->assertSeeText('Above even loan pace');
     }
 
     public function test_dashboard_shows_on_track_message_when_under_loan_pace(): void
@@ -422,6 +421,6 @@ class StudentFundingPlanTest extends TestCase
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSeeText('on track with your loan pace');
+            ->assertSeeText('On track with loan pace');
     }
 }

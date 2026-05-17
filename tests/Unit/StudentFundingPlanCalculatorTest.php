@@ -29,7 +29,7 @@ class StudentFundingPlanCalculatorTest extends TestCase
 
     public function test_weekly_spread_divides_loan_by_weeks_in_period(): void
     {
-        $user = User::factory()->student()->create();
+        $user = User::factory()->create();
         $plan = StudentFundingPlan::factory()->for($user)->weekly()->create([
             'amount' => 1200,
             'received_on' => '2026-01-01',
@@ -45,7 +45,7 @@ class StudentFundingPlanCalculatorTest extends TestCase
 
     public function test_monthly_spread_counts_calendar_months_touched(): void
     {
-        $user = User::factory()->student()->create();
+        $user = User::factory()->create();
         $plan = StudentFundingPlan::factory()->for($user)->create([
             'amount' => 5000,
             'received_on' => '2026-01-15',
@@ -64,7 +64,7 @@ class StudentFundingPlanCalculatorTest extends TestCase
     {
         Carbon::setTestNow('2026-03-01');
 
-        $user = User::factory()->student()->create();
+        $user = User::factory()->create();
         $plan = StudentFundingPlan::factory()->for($user)->create([
             'received_on' => '2026-02-01',
             'next_payment_on' => '2026-04-01',
@@ -99,7 +99,7 @@ class StudentFundingPlanCalculatorTest extends TestCase
     {
         Carbon::setTestNow('2026-02-15');
 
-        $user = User::factory()->student()->create();
+        $user = User::factory()->create();
         $plan = StudentFundingPlan::factory()->for($user)->create([
             'amount' => 3000,
             'received_on' => '2026-01-01',
@@ -123,7 +123,7 @@ class StudentFundingPlanCalculatorTest extends TestCase
     {
         Carbon::setTestNow('2026-02-15');
 
-        $user = User::factory()->student()->create();
+        $user = User::factory()->create();
         $plan = StudentFundingPlan::factory()->for($user)->create([
             'amount' => 3000,
             'received_on' => '2026-01-01',
@@ -147,7 +147,7 @@ class StudentFundingPlanCalculatorTest extends TestCase
     {
         Carbon::setTestNow('2026-05-01');
 
-        $user = User::factory()->student()->create();
+        $user = User::factory()->create();
         $plan = StudentFundingPlan::factory()->for($user)->create([
             'received_on' => '2026-01-01',
             'next_payment_on' => '2026-05-01',
@@ -163,7 +163,7 @@ class StudentFundingPlanCalculatorTest extends TestCase
     {
         Carbon::setTestNow('2026-06-15');
 
-        $user = User::factory()->student()->create();
+        $user = User::factory()->create();
         $plan = StudentFundingPlan::factory()->for($user)->create([
             'received_on' => '2026-01-01',
             'next_payment_on' => '2026-05-01',
@@ -194,7 +194,7 @@ class StudentFundingPlanCalculatorTest extends TestCase
     {
         Carbon::setTestNow('2026-02-01');
 
-        $user = User::factory()->student()->create();
+        $user = User::factory()->create();
         $plan = StudentFundingPlan::factory()->for($user)->create([
             'amount' => 3000,
             'received_on' => '2026-01-01',

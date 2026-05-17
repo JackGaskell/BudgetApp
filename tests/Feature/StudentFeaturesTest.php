@@ -10,35 +10,27 @@ class StudentFeaturesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_dashboard_does_not_show_student_prompt_banner(): void
+    public function test_non_student_does_not_see_loan_card_on_dashboard(): void
     {
         $user = User::factory()->create(['is_student' => false]);
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertDontSeeText('Budgeting around student loans?');
-        $response->assertDontSeeText('Yes, I’m a student');
+        $response->assertDontSeeText('Student loan');
+        $response->assertDontSeeText('Set up loan tracking');
     }
 
-    public function test_student_sees_loan_planning_card_on_dashboard(): void
+    public function test_student_sees_loan_card_on_dashboard(): void
     {
         $user = User::factory()->student()->create();
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSeeText('Student loan planning');
-    }
-
-    public function test_non_student_does_not_see_loan_planning_card(): void
-    {
-        $user = User::factory()->create(['is_student' => false]);
-
-        $response = $this->actingAs($user)->get(route('dashboard'));
-
-        $response->assertOk();
-        $response->assertDontSeeText('Student loan planning');
+        $response->assertSeeText('Student loan');
+        $response->assertSeeText('Add your loan');
+        $response->assertSeeText('Current balance');
     }
 
     public function test_profile_can_toggle_student_flag(): void

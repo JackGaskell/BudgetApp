@@ -30,8 +30,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
     Route::delete('/income/{income}', [IncomeController::class, 'destroy'])->name('income.destroy');
 
-    Route::post('/student/funding-plan', [StudentFundingPlanController::class, 'store'])->name('student.funding-plan.store');
-    Route::delete('/student/funding-plan', [StudentFundingPlanController::class, 'destroy'])->name('student.funding-plan.destroy');
+    Route::post('/funding-plan', [StudentFundingPlanController::class, 'store'])->name('funding-plan.store');
+    Route::delete('/funding-plan', [StudentFundingPlanController::class, 'destroy'])->name('funding-plan.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

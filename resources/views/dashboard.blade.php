@@ -5,8 +5,6 @@
 @section('content')
     @include('layouts.partials.month-navigation', ['targetRoute' => 'dashboard'])
 
-    @include('layouts.partials.student-loan-planning-card')
-
     <section class="mb-6">
         <div class="rounded-xl bg-indigo-600 p-5 text-white shadow-sm">
             <p class="text-sm text-indigo-100">{{ __('Current balance') }}</p>
@@ -63,6 +61,8 @@
     <section class="mb-6 space-y-3">
         <h2 class="text-lg font-bold text-gray-900">{{ __('Insights') }}</h2>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            @include('layouts.partials.dashboard-funding-insights')
+
             <div class="rounded-xl border border-blue-100 bg-blue-50 p-4 shadow-sm">
                 <p class="text-sm text-gray-600">{{ __('Daily budget') }}</p>
                 @if (! $is_current_month)
@@ -294,5 +294,9 @@
             </div>
         </div>
     </section>
+
+    @if (auth()->user()?->hasStudentFeatures())
+        @include('layouts.partials.funding-plan-modal')
+    @endif
 
 @endsection

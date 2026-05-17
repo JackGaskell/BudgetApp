@@ -21,7 +21,7 @@ class StudentFundingPlanFactory extends Factory
         $received = now()->subWeeks(2)->startOfDay();
 
         return [
-            'user_id' => User::factory()->student(),
+            'user_id' => User::factory(),
             'name' => 'Student loan',
             'amount' => 3000,
             'received_on' => $received,

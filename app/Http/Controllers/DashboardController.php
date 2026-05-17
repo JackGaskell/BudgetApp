@@ -142,9 +142,11 @@ class DashboardController extends Controller
         $nextMonth = $monthCursor->copy()->addMonth();
 
         $fundingSnapshot = null;
-        $fundingPlan = $user->studentFundingPlan()->first();
-        if ($user->hasStudentFeatures() && $fundingPlan) {
-            $fundingSnapshot = $fundingCalculator->snapshot($user, $fundingPlan);
+        if ($user->hasStudentFeatures()) {
+            $fundingPlan = $user->studentFundingPlan()->first();
+            if ($fundingPlan) {
+                $fundingSnapshot = $fundingCalculator->snapshot($user, $fundingPlan);
+            }
         }
 
         return view('dashboard', [
